@@ -363,4 +363,4 @@ if __name__ == "__main__":
 
     X, y = X_y_regression(df)
     
-    print(X.info())
+    print(df.info())

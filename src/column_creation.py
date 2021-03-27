@@ -1,8 +1,7 @@
 import pandas as pd
 import sqlite3
 pd.set_option("display.max_columns", 100)
-
-
+import numpy as np
 
 def load_df():
     conn = sqlite3.connect("/home/sam/Documents/DSI/capstone/poker/data/drivehud.db")
@@ -45,12 +44,33 @@ def fill_columns(df):
     
     df['BB_in_stack'] = df.apply(lambda x: BB_in_stack(x['starting_stack'], x['BB']), axis = 1)
 
-    df['net_outcome'] = df.won - df.bet 
+    df['net_outcome'] = df['won'] - df['bet'] 
+
+    df['all_in'] = df.apply(lambda x: all_in(x['starting_stack'], x['bet']), axis = 1)
+
+    df['money_beyond_blind'] = df.apply(lambda x: money_beyond_blind(x['HandHistory'], x['bet']), axis = 1) # whether i put in money in addition to OG blind
+
+    df['hour'] = df['HandHistoryTimestamp'].apply(lambda x: pd.to_datetime(x).hour) # will need to determine degree to which time is offset
+
+    df['year_month_day'] = pd.to_datetime(df['HandHistoryTimestamp']).dt.to_period('D').dt.to_timestamp()  # will need to determine degree to which time is offset
+
+    df['days_since_start'] = df['year_month_day'].apply(lambda x: (x - pd.to_datetime('2019-10-24 00:00:00')).days)
+
+    f_dic = frequency_dict(df)
+
+    df['hand_frequency'] = df['days_since_start'].apply(lambda x: hand_frequency(x, f_dic))
 
     return df
 
 
+########################################################################################
 
+# functions we will be applying to above 
+
+
+
+
+# lambda function to turn OG 'made_money' column into 1 - 0 boolean (instead of boolean)
 def fix_made_money(x):
     result = 0
     if x == True:
@@ -59,7 +79,7 @@ def fix_made_money(x):
         result = 0
     return result
 
-
+# looking at players at table or players in hand????
 def total_players(x):
     count = 0
     for elem in x:
@@ -94,7 +114,7 @@ def hole_cards(x):
     else:
         return None
     
-    
+# probably uneccesary 
 def possible_cards(x): # will do this first, and then remove cards in seperate functions, still not sure how to deal with all in vs seeing later action
     deck = []
     for s in ['D', 'S', 'C', 'H']:
@@ -102,6 +122,7 @@ def possible_cards(x): # will do this first, and then remove cards in seperate f
             temp = s + c
             deck.append(temp)
     return deck 
+
 
 def blinds(x):
     blind_list = []
@@ -154,7 +175,7 @@ def won(x):
 def bet(x):
     bet = ''
     temp = ''
-    result = 0
+    result = None
     for elem in x:
         if 'Hero' in elem and 'addon' in elem:
             temp = elem
@@ -163,8 +184,7 @@ def bet(x):
         temp = temp.split(' ')
         for elem in temp:
             if 'bet' in elem:
-                bet = elem.replace('bet="', '')
-                bet = bet.replace('"', '')
+                bet = elem.replace('bet="', '').replace('"', '')
                 result = float(bet)
     return result 
 
@@ -195,7 +215,7 @@ def tournament_type(x):
         result = 'Jackpot Sit & Go $0.50'
     return result 
 
-
+# maybe recycle some of this code in order to get dummy columns for certain types of hands?
 def cards_numeric(x):
     result = 0
     if isinstance(x, list):
@@ -344,10 +364,78 @@ def BB_in_stack(stack, BB):
     if pd.isna(BB) == False and pd.isna(stack) == False:
         result = stack / BB
     
-    return result 
+    return result
 
 
 
+
+
+def all_in(stack, bet):
+    result = None
+    if stack == bet:
+        result = int(1)
+    else:
+        if stack > 0:
+            result = int(0)
+
+    return result
+
+
+
+
+def money_beyond_blind(HH, bet):
+    temp = None
+    blind = None
+    result = 0
+    for elem in HH:
+
+        if 'cards="[cards]"' in elem and 'Hero' in elem:
+            temp = elem.split()
+            break
+    if temp != None:
+        for elem in temp:
+            if 'sum=' in elem:
+                blind = float(elem.replace('sum="', '').replace('"', '').strip())
+                break
+    if blind != None and bet != None:
+        if blind < bet:
+            result = 1
+
+    return result
+
+
+
+
+def frequency_dict(df): # hands played in 15 day period (7 days before, current day, 7 days after)
+    result = {}
+    date_range = np.array([-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7]) # maybe change this to an argument 
+    last_day = df['days_since_start'].iloc[-1] # get last day's day number
+    day = 0
+    while date_range[7] <= last_day: 
+        day_count = 0 # counts number of hands for that given hands day range
+
+        for num in date_range:
+            mask = df['days_since_start'] == num
+            day_count += df[mask].shape[0]
+        result[day] = day_count
+        day += 1
+        date_range +=1
+    return result
+
+def hand_frequency(x, dic): # uses dictionary created from above to assign a value to each row 
+    return dic[x]
+
+
+
+
+
+
+
+
+
+
+
+# not a column function, just something to reduce the series for regression purposes
 def X_y_regression(df):
     X = df[['buyin', 'card_rank', 'BB_in_stack', 'position', 'net_outcome']]
 
@@ -356,11 +444,157 @@ def X_y_regression(df):
     y = X.pop('net_outcome')
 
     return X, y
+
+
+
 if __name__ == "__main__":
     df = load_df()
 
     df = fill_columns(df)
 
-    X, y = X_y_regression(df)
     
-    print(df.info())
+    print(df.info()) 
+    print(df.tail(5))
+    print(df.head(5))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

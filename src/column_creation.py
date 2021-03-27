@@ -67,6 +67,7 @@ def fill_columns(df):
 
     df['river_bet'] = df.apply(lambda x: river_bet(x), axis = 1)
 
+    df['preflop_bet'] = df['bet'] - (df['flop_bet'] + df['turn_bet'] + df['river_bet'])
     return df
 
 

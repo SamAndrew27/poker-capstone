@@ -60,6 +60,13 @@ def fill_columns(df):
 
     df['hand_frequency'] = df['days_since_start'].apply(lambda x: hand_frequency(x, f_dic))
 
+    # using bet to describe putting any amount of $ in the pot 
+    df['flop_bet'] = df.apply(lambda x: flop_bet(x), axis = 1)
+
+    df['turn_bet'] = df.apply(lambda x: turn_bet(x), axis = 1)
+
+    df['river_bet'] = df.apply(lambda x: river_bet(x), axis = 1)
+
     return df
 
 
@@ -403,8 +410,98 @@ def money_beyond_blind(HH, bet):
 
     return result
 
+def flop_bet(x): # takes in HandHistory and money_beyond_blind
+    hh = x['HandHistory']
+    mbb = x['money_beyond_blind']
+    result = 0
+    subset = []
+    temp = []
+    if mbb == 1: # skips process if no money put in beyond blind
+        start = 0
+        stop = 0
+        for idx, s in enumerate(hh): # gets range to look for hero flop bet in 
+            if 'Flop' in s:
+                start = idx + 1
+            if 'round no="3' in s:
+                stop = idx
+                break 
+        if start != 0:
+            if stop == 0: # in case there was no betting after flop 
+                stop = -1 
+            subset = hh[start:stop]
+        if subset != []: # continues if we have a subset to work with 
+            for s in subset:
+                if 'player="Hero"' in s:
+                    temp = s.split()
+        if temp != []:
+            for s in temp:
+                if 'sum=' in s:
+                    result = float(s.replace('sum="', '').replace('"', '').strip())
+    
+    return result 
+                   
 
 
+
+def turn_bet(x): # takes in HandHistory and money_beyond_blind
+    hh = x['HandHistory']
+    mbb = x['money_beyond_blind']
+    result = 0
+    subset = []
+    temp = []
+    if mbb == 1: # skips process if no money put in beyond blind
+        start = 0
+        stop = 0
+        for idx, s in enumerate(hh): # gets range to look for hero flop bet in 
+            if 'Turn' in s:
+                start = idx + 1
+            if 'round no="4' in s:
+                stop = idx
+                break 
+        if start != 0:
+            if stop == 0: # in case there was no betting after flop 
+                stop = -1 
+            subset = hh[start:stop]
+        if subset != []: # continues if we have a subset to work with 
+            for s in subset:
+                if 'player="Hero"' in s:
+                    temp = s.split()
+        if temp != []:
+            for s in temp:
+                if 'sum=' in s:
+                    result = float(s.replace('sum="', '').replace('"', '').strip())
+    
+    return result 
+
+
+def river_bet(x): # takes in HandHistory and money_beyond_blind
+    hh = x['HandHistory']
+    mbb = x['money_beyond_blind']
+    result = 0
+    subset = []
+    temp = []
+    if mbb == 1: # skips process if no money put in beyond blind
+        start = 0
+        for idx, s in enumerate(hh): # gets range to look for hero flop bet in 
+            if 'River' in s:
+                start = idx + 1
+                break 
+        if start != 0:
+            subset = hh[start:]
+        if subset != []: # continues if we have a subset to work with 
+            for s in subset:
+                if 'player="Hero"' in s:
+                    temp = s.split()
+        if temp != []:
+            for s in temp:
+                if 'sum=' in s:
+                    result = float(s.replace('sum="', '').replace('"', '').strip())
+    
+    return result 
+
+
+
+# maybe create a few ranges? I'll leave it like so for now and then replicate as needed 
 
 def frequency_dict(df): # hands played in 15 day period (7 days before, current day, 7 days after)
     result = {}
@@ -434,6 +531,14 @@ def hand_frequency(x, dic): # uses dictionary created from above to assign a val
 
 
 
+
+
+
+
+
+
+
+#####################################################################################################################################
 
 # not a column function, just something to reduce the series for regression purposes
 def X_y_regression(df):

@@ -73,6 +73,11 @@ def fill_columns(df):
 
     df['suited'] = df.my_cards.apply(lambda x: suited(x))
 
+    df['pocket_pair'] = df.my_cards.apply(lambda x: pocket_pair(x)) # redundant with the gap column?
+
+    df['gap'] = df['my_cards'].apply(lambda x: gap(x))
+
+    df['low_card'] = df.my_cards.apply(lambda x: low_card(x)) # redundant with gap/high card? 
 
     return df
 
@@ -564,14 +569,60 @@ def hand_frequency(x, dic): # uses dictionary created from above to assign a val
 
 
 
+def pocket_pair(x):
+    result = 0
+    if isinstance(x, list):
+        if len(x[0]) == 2 and len(x[1]) == 2:
+            c1 = x[0]
+            c2 = x[1]
+            c1_rank = c1[1]
+            c2_rank = c2[1]
+            if c1_rank == c2_rank:
+                result = 1
+    return result 
 
 
 
+def gap(x):
+    result = None
+    if isinstance(x, list):
+        if len(x[0]) == 2 and len(x[1]) == 2:
+            c1 = x[0]
+            c2 = x[1]
+            c1_rank = c1[1]
+            c2_rank = c2[1]  
+            c_rank = [c1_rank, c2_rank]                        
+            numeric_card_lst = []
+            
+            for card in c_rank: # assigning numeric value of card ranks
+                if card in ['A', 'K', 'Q', 'J', '1']:
+                    numeric_dic = {'A': 14, 'K': 13, 'Q': 12, 'J': 11, '1': 10}
+                    numeric_card_lst.append(numeric_dic[card])
+                else:
+                    numeric_card_lst.append(int(card))
+                    
+            result = max(numeric_card_lst) - min(numeric_card_lst)
+    return result 
 
 
-
-
-
+def low_card(x):
+    result = None
+    if isinstance(x, list):
+        if len(x[0]) == 2 and len(x[1]) == 2:
+            c1 = x[0]
+            c2 = x[1]
+            c1_rank = c1[1]
+            c2_rank = c2[1]
+            numeric_card_lst = []
+            c_rank = [c1_rank, c2_rank]
+            for card in c_rank: # assigning numeric value of card ranks
+                if card in ['A', 'K', 'Q', 'J', '1']:
+                    numeric_dic = {'A': 14, 'K': 13, 'Q': 12, 'J': 11, '1': 10}
+                    numeric_card_lst.append(numeric_dic[card])
+                else:
+                    numeric_card_lst.append(int(card))
+            result = int(min(numeric_card_lst))
+    return result  
 
 
 

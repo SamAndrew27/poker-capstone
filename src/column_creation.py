@@ -14,36 +14,38 @@ def load_df():
 
 
 def fill_columns(df):
-    df['buyin'] = df.HandHistory.apply(lambda row: buyin(row)) 
+    df['buyin'] = df['HandHistory'].apply(lambda row: buyin(row)) 
 
-    df['gametype'] = df.HandHistory.apply(lambda x: gametype(x))
+    df['gametype'] = df['HandHistory'].apply(lambda x: gametype(x))
 
 
-    df['the_deck'] = df.HandHistory.apply(lambda row: possible_cards(row))
+    df['the_deck'] = df['HandHistory'].apply(lambda row: possible_cards(row))
 
-    df['my_cards'] = df.HandHistory.apply(lambda row: hole_cards(row))
+    df['my_cards'] = df['HandHistory'].apply(lambda row: hole_cards(row))
     
     df['blinds'] = df.apply(lambda x: blinds(x), axis =1)
 
-    df['starting_stack'] = df.HandHistory.apply(lambda row: start_stack(row))
+    df['starting_stack'] = df['HandHistory'].apply(lambda row: start_stack(row))
     
-    df['tournament_type'] = df.HandHistory.apply(lambda row: tournament_type(row))
+    df['tournament_type'] = df['HandHistory'].apply(lambda row: tournament_type(row))
 
-    df['won'] = df.HandHistory.apply(lambda row: won(row))
+    df['won'] = df['HandHistory'].apply(lambda row: won(row))
 
-    df['bet'] = df.HandHistory.apply(lambda row: bet(row))
+    df['bet'] = df['HandHistory'].apply(lambda row: bet(row))
     
     df['made_money'] = df['won'] > df['bet']
     
-    df['made_money'] = df.made_money.apply(lambda x: fix_made_money(x))
+    df['made_money'] = df['made_money'].apply(lambda x: fix_made_money(x))
     
-    df['total_players'] = df.HandHistory.apply(lambda x: total_players(x))
+    df['total_players'] = df['HandHistory'].apply(lambda x: total_players(x))
     
-    df['card_rank'] = df.my_cards.apply(lambda x: cards_numeric(x))
+    df['card_rank'] = df['my_cards'].apply(lambda x: cards_numeric(x))
     
-    df['position'] = df.HandHistory.apply(lambda x: position(x))
+    df['position'] = df['HandHistory'].apply(lambda x: position(x))
     
-    df['BB'] = df.blinds.apply(lambda x: BB(x))
+    df['BB'] = df['blinds'].apply(lambda x: BB(x))
+
+    df = fix_BB_nans(df) # consider removing? 
     
     df['BB_in_stack'] = df.apply(lambda x: BB_in_stack(x['starting_stack'], x['BB']), axis = 1)
 
@@ -72,15 +74,15 @@ def fill_columns(df):
 
     df['preflop_bet'] = df['bet'] - (df['flop_bet'] + df['turn_bet'] + df['river_bet'])
 
-    df['high_card'] = df.my_cards.apply(lambda x: high_card(x))
+    df['high_card'] = df['my_cards'].apply(lambda x: high_card(x))
 
-    df['suited'] = df.my_cards.apply(lambda x: suited(x))
+    df['suited'] = df['my_cards'].apply(lambda x: suited(x))
 
-    df['pocket_pair'] = df.my_cards.apply(lambda x: pocket_pair(x)) # redundant with the gap column?
+    df['pocket_pair'] = df['my_cards'].apply(lambda x: pocket_pair(x)) # redundant with the gap column?
 
     df['gap'] = df['my_cards'].apply(lambda x: gap(x))
 
-    df['low_card'] = df.my_cards.apply(lambda x: low_card(x)) # redundant with gap/high card? 
+    df['low_card'] = df['my_cards'].apply(lambda x: low_card(x)) # redundant with gap/high card? 
 
     df['table_max_players'] = df['HandHistory'].apply(lambda x: table_max(x))
 
@@ -358,7 +360,7 @@ def BB(x): # did this super jankily, definitely return. just wanna see if i can 
                 BB = blinds.pop(blinds.index(max(blinds)))
                 SB = blinds.pop(blinds.index(max(blinds)))
                 anti = blinds.pop(blinds.index(max(blinds)))
-                if BB / SB == 2 and BB / anti == 10:
+                if BB / SB == 2 and BB / anti == 10: # maybe just don't include anti element? 
                     result = max(x)
 
 
@@ -659,6 +661,26 @@ def table_max(x):
             result = int(elem.replace('<maxplayers>', '').replace('</maxplayers>',''))
             break
     return result 
+
+# possibly unecessary now that we know that most of our BB nans were from cash games 
+
+def fix_BB_nans(input_df):
+    df = input_df.copy()
+    for idx, row in df.iterrows():
+        if pd.isnull(row['BB']):
+            tourn_num = row['TournamentNumber']
+            if pd.isnull(df['BB'].iloc[idx+1]) == False:
+                option_1 = df['TournamentNumber'].iloc[idx+1]
+                if option_1 == tourn_num:
+                    df['BB'].iloc[idx] = df['BB'].iloc[idx+1]
+            else:
+                if pd.isnull(df['BB'].iloc[idx+2]) == False:
+                    option_2 = df['TournamentNumber'].iloc[idx+2]
+                    if option_2 == tourn_num:
+                        df['BB'].iloc[idx] = df['BB'].iloc[idx+2]                
+
+                         
+    return df
 
 #####################################################################################################################################
 

@@ -16,11 +16,14 @@ def load_df():
 def fill_columns(df):
     df['buyin'] = df.HandHistory.apply(lambda row: buyin(row)) 
 
+    df['gametype'] = df.HandHistory.apply(lambda x: gametype(x))
+
+
     df['the_deck'] = df.HandHistory.apply(lambda row: possible_cards(row))
 
     df['my_cards'] = df.HandHistory.apply(lambda row: hole_cards(row))
     
-    df['blinds'] = df.HandHistory.apply(lambda row: blinds(row))
+    df['blinds'] = df.apply(lambda x: blinds(x), axis =1)
 
     df['starting_stack'] = df.HandHistory.apply(lambda row: start_stack(row))
     
@@ -78,6 +81,8 @@ def fill_columns(df):
     df['gap'] = df['my_cards'].apply(lambda x: gap(x))
 
     df['low_card'] = df.my_cards.apply(lambda x: low_card(x)) # redundant with gap/high card? 
+
+    df['table_max_players'] = df['HandHistory'].apply(lambda x: table_max(x))
 
     return df
 
@@ -143,20 +148,7 @@ def possible_cards(x): # will do this first, and then remove cards in seperate f
     return deck 
 
 
-def blinds(x):
-    blind_list = []
-    result = []
-    for elem in x:
-        if '[cards]' in elem:
-            blind_list.append(elem)
-    for elem in blind_list:
-        temp = elem.split(' ')
-        for s in temp:
-            if 'sum' in s:
-                temp2 = s.replace('sum="', '')
-                temp2 = temp2.replace('"', '')
-                result.append(float(temp2))
-    return result 
+
 
 def start_stack(x):
     result = None
@@ -357,7 +349,7 @@ def BB(x): # did this super jankily, definitely return. just wanna see if i can 
     def look_for_blinds(blinds):
         result = None 
         if len(blinds) == 2:
-            if max(blinds) / min(blinds) == 2:
+            if max(blinds) / min(blinds) == 2 or max(blinds) < 0.5:
                 result = max(x)
 
 
@@ -377,6 +369,8 @@ def BB(x): # did this super jankily, definitely return. just wanna see if i can 
 
     
     return result
+
+
 
 def BB_in_stack(stack, BB):
     result = None
@@ -624,8 +618,47 @@ def low_card(x):
             result = int(min(numeric_card_lst))
     return result  
 
+def gametype(x):
+    temp = None
+    for elem in x:
+        if 'gametype' in elem:
+            temp = elem.replace('<gametype>', '').replace('</gametype>', '').strip()
+            break
+    return temp
 
 
+def blinds(x): # hand history & gametype 
+    gt = x['gametype']
+    hh = x['HandHistory']
+    if gt == 'Holdem NL':
+        blind_list = []
+        result = []
+        for elem in hh:
+            if '[cards]' in elem:
+                blind_list.append(elem)
+        for elem in blind_list:
+            temp = elem.split(' ')
+            for s in temp:
+                if 'sum' in s:
+                    temp2 = s.replace('sum="', '')
+                    temp2 = temp2.replace('"', '')
+                    result.append(float(temp2))
+    else:
+        if gt == 'Holdem NL $0.02/$0.05':
+            result = [.02, .05]
+        if gt == 'Holdem NL $0.20/$0.40':
+            result = [.2, .4]
+        if gt == 'Holdem NL $0.10/$0.20':
+            result = [.1,.2]
+    return result 
+
+def table_max(x):
+    result = None
+    for elem in x:
+        if 'maxplayers' in elem:
+            result = int(elem.replace('<maxplayers>', '').replace('</maxplayers>',''))
+            break
+    return result 
 
 #####################################################################################################################################
 
@@ -639,7 +672,14 @@ def X_y_regression(df):
 
     return X, y
 
-
+def split_cash(df):
+    tourn_mask = df['gametype'] == 'Holdem NL'
+    cash_mask = df['gametype'] != 'Holdem NL'
+        
+    cash = df[cash_mask]
+    tourn = df[tourn_mask]
+    
+    return tourn, cash 
 
 if __name__ == "__main__":
     df = load_df()

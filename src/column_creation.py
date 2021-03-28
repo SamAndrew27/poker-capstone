@@ -68,6 +68,12 @@ def fill_columns(df):
     df['river_bet'] = df.apply(lambda x: river_bet(x), axis = 1)
 
     df['preflop_bet'] = df['bet'] - (df['flop_bet'] + df['turn_bet'] + df['river_bet'])
+
+    df['high_card'] = df.my_cards.apply(lambda x: high_card(x))
+
+    df['suited'] = df.my_cards.apply(lambda x: suited(x))
+
+
     return df
 
 
@@ -500,6 +506,37 @@ def river_bet(x): # takes in HandHistory and money_beyond_blind
     
     return result 
 
+
+def high_card(x):
+    result = None
+    if isinstance(x, list):
+        if len(x[0]) == 2 and len(x[1]) == 2:
+            c1 = x[0]
+            c2 = x[1]
+            c1_rank = c1[1]
+            c2_rank = c2[1]
+            numeric_card_lst = []
+            c_rank = [c1_rank, c2_rank]
+            for card in c_rank: # assigning numeric value of card ranks
+                if card in ['A', 'K', 'Q', 'J', '1']:
+                    numeric_dic = {'A': 14, 'K': 13, 'Q': 12, 'J': 11, '1': 10}
+                    numeric_card_lst.append(numeric_dic[card])
+                else:
+                    numeric_card_lst.append(int(card))
+            result = int(max(numeric_card_lst))
+    return result
+
+def suited(x):
+    result = 0
+    if isinstance(x, list):
+        if len(x[0]) == 2 and len(x[1]) == 2:
+            c1 = x[0]
+            c2 = x[1]
+            c1_suit = c1[0]
+            c2_suit = c2[0]
+            if c2_suit == c1_suit:
+                result = 1
+    return result 
 
 
 # maybe create a few ranges? I'll leave it like so for now and then replicate as needed 

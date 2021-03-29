@@ -426,7 +426,7 @@ def flop_bet(x): # takes in HandHistory and money_beyond_blind
     mbb = x['money_beyond_blind']
     result = 0
     subset = []
-    temp = []
+    action_lst = []
     if mbb == 1: # skips process if no money put in beyond blind
         start = 0
         stop = 0
@@ -443,9 +443,10 @@ def flop_bet(x): # takes in HandHistory and money_beyond_blind
         if subset != []: # continues if we have a subset to work with 
             for s in subset:
                 if 'player="Hero"' in s:
-                    temp = s.split()
-        if temp != []:
-            for s in temp:
+                    for sub_string in s.split():
+                        action_lst.append(sub_string)
+        if action_lst != []:
+            for s in action_lst:
                 if 'sum=' in s:
                     result = float(s.replace('sum="', '').replace('"', '').strip())
     
@@ -459,10 +460,11 @@ def turn_bet(x): # takes in HandHistory and money_beyond_blind
     mbb = x['money_beyond_blind']
     result = 0
     subset = []
-    temp = []
+    action_lst = [] # list of actions I made in the round of betting
+    start = 0
+    stop = 0
     if mbb == 1: # skips process if no money put in beyond blind
-        start = 0
-        stop = 0
+
         for idx, s in enumerate(hh): # gets range to look for hero flop bet in 
             if 'Turn' in s:
                 start = idx + 1
@@ -473,16 +475,17 @@ def turn_bet(x): # takes in HandHistory and money_beyond_blind
             if stop == 0: # in case there was no betting after flop 
                 stop = -1 
             subset = hh[start:stop]
-        if subset != []: # continues if we have a subset to work with 
+        if subset != []: # continues if we have a subset to work with, maybe remove this line 
             for s in subset:
                 if 'player="Hero"' in s:
-                    temp = s.split()
-        if temp != []:
-            for s in temp:
+                    for sub_string in s.split():
+                        action_lst.append(sub_string)
+        if action_lst != []:
+            for s in action_lst:
                 if 'sum=' in s:
-                    result = float(s.replace('sum="', '').replace('"', '').strip())
+                    result += float(s.replace('sum="', '').replace('"', '').strip())
     
-    return result 
+    return result
 
 
 def river_bet(x): # takes in HandHistory and money_beyond_blind
@@ -490,7 +493,7 @@ def river_bet(x): # takes in HandHistory and money_beyond_blind
     mbb = x['money_beyond_blind']
     result = 0
     subset = []
-    temp = []
+    action_lst = []
     if mbb == 1: # skips process if no money put in beyond blind
         start = 0
         for idx, s in enumerate(hh): # gets range to look for hero flop bet in 
@@ -502,9 +505,10 @@ def river_bet(x): # takes in HandHistory and money_beyond_blind
         if subset != []: # continues if we have a subset to work with 
             for s in subset:
                 if 'player="Hero"' in s:
-                    temp = s.split()
-        if temp != []:
-            for s in temp:
+                    for sub_string in s.split():
+                        action_lst.append(sub_string)
+        if action_lst != []:
+            for s in action_lst:
                 if 'sum=' in s:
                     result = float(s.replace('sum="', '').replace('"', '').strip())
     

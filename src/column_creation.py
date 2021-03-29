@@ -18,6 +18,7 @@ def fill_columns(df, fill_BB_nans = False):
 
     df['gametype'] = df['HandHistory'].apply(lambda x: gametype(x))
 
+    df['my_blind_anti_total'] = df.HandHistory.apply(lambda x: my_blind_anti_total(x))
 
     df['the_deck'] = df['HandHistory'].apply(lambda row: possible_cards(row))
 
@@ -54,7 +55,7 @@ def fill_columns(df, fill_BB_nans = False):
 
     df['all_in'] = df.apply(lambda x: all_in(x['starting_stack'], x['bet']), axis = 1)
 
-    df['money_beyond_blind'] = df.apply(lambda x: money_beyond_blind(x['HandHistory'], x['bet']), axis = 1) # whether i put in money in addition to OG blind
+    df['money_beyond_blind'] = df.apply(lambda x: money_beyond_blind(x), axis = 1) # whether i put in money in addition to OG blind
 
     df['hour'] = df['HandHistoryTimestamp'].apply(lambda x: pd.to_datetime(x).hour) # will need to determine degree to which time is offset
 
@@ -73,7 +74,7 @@ def fill_columns(df, fill_BB_nans = False):
 
     df['river_bet'] = df.apply(lambda x: river_bet(x), axis = 1)
 
-    df['preflop_bet'] = df['bet'] - (df['flop_bet'] + df['turn_bet'] + df['river_bet'])
+    df['preflop_bet'] = df['bet'] - (df['flop_bet'] + df['turn_bet'] + df['river_bet'] + df['my_blind_anti_total'])
 
     df['high_card'] = df['my_cards'].apply(lambda x: high_card(x))
 
@@ -350,30 +351,28 @@ def position(x):
 
 def BB(x): # did this super jankily, definitely return. just wanna see if i can get this loosely working
   
-    def look_for_blinds(blinds_column):
-        result = None 
-        blinds = blinds_column.copy()
-        if len(blinds) == 2:
-            if max(blinds) / min(blinds) == 2 or max(blinds) < 0.5:
+
+    result = None 
+    blinds = x.copy()
+    if len(blinds) == 2:
+        if max(blinds) / min(blinds) == 2 or max(blinds) < 0.5:
+            result = max(x)
+
+
+    else:
+        if len(blinds) > 2:
+            BB = blinds.pop(blinds.index(max(blinds)))
+            SB = blinds.pop(blinds.index(max(blinds)))
+            anti = blinds.pop(blinds.index(max(blinds)))
+            if BB / SB == 2 and BB / anti == 10: # maybe just don't include anti element? 
                 result = max(x)
 
 
-        else:
-            if len(blinds) > 2:
-                BB = blinds.pop(blinds.index(max(blinds)))
-                SB = blinds.pop(blinds.index(max(blinds)))
-                anti = blinds.pop(blinds.index(max(blinds)))
-                if BB / SB == 2 and BB / anti == 10: # maybe just don't include anti element? 
-                    result = max(x)
 
+    return result 
 
-
-        return result 
-
-    result = look_for_blinds(x)
 
     
-    return result
 
 
 
@@ -401,25 +400,15 @@ def all_in(stack, bet):
 
 
 
-def money_beyond_blind(HH, bet):
-    temp = None
-    blind = None
+def money_beyond_blind(x):
+    my_blind = x['my_blind_anti_total']
+    my_bet = x['bet']
     result = 0
-    for elem in HH:
-
-        if 'cards="[cards]"' in elem and 'Hero' in elem:
-            temp = elem.split()
-            break
-    if temp != None:
-        for elem in temp:
-            if 'sum=' in elem:
-                blind = float(elem.replace('sum="', '').replace('"', '').strip())
-                break
-    if blind != None and bet != None:
-        if blind < bet:
-            result = 1
-
+ 
+    if my_bet > my_blind:
+        result = 1
     return result
+
 
 def flop_bet(x): # takes in HandHistory and money_beyond_blind
     hh = x['HandHistory']
@@ -453,7 +442,17 @@ def flop_bet(x): # takes in HandHistory and money_beyond_blind
     return result 
                    
 
-
+def my_blind_anti_total(x):
+    action_list = []
+    result = 0
+    for elem in x:
+        if '[cards]' in elem and 'Hero' in elem:
+            action_list.append(elem)
+    for elem in action_list:
+        for sub_string in elem.split():
+            if 'sum' in sub_string:
+                result += float(sub_string.replace('sum="', '').replace('"', '').strip())
+    return result 
 
 def turn_bet(x): # takes in HandHistory and money_beyond_blind
     hh = x['HandHistory']
@@ -567,10 +566,6 @@ def frequency_dict(df): # hands played in 15 day period (7 days before, current 
 
 def hand_frequency(x, dic): # uses dictionary created from above to assign a value to each row 
     return dic[x]
-
-
-
-
 
 def pocket_pair(x):
     result = 0
@@ -713,12 +708,10 @@ def split_cash(df):
 if __name__ == "__main__":
     df = load_df()
 
-    df = fill_columns(df)
+    df = fill_columns(df,fill_BB_nans=True)
 
     
-    print(df.info()) 
-    print(df.tail(5))
-    print(df.head(5))
+    df.to_csv('full_dataframe.csv')
 
 
 

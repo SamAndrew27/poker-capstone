@@ -21,10 +21,10 @@ def gbr_cv(X, y, lr = .05, mf = 2, md = 2, subsamp = .75):
 
 # Grid Search, consider expanding upon this (more metrics, more values for metrics)
 
-p_grid = {'learning_rate': [.05, .1, .2], # consider looking at learning_rate, loss, 
-            'max_features': [2,3],
-            'max_depth': [2,3,4],
-            'subsample': [.25, .5, .75, 1]}
+p_grid = {'min_samples_split': [2,3,4,6], # consider looking at learning_rate, loss, 
+            'max_features': [3,4,5,6,7],
+            'max_depth': [2,3,4, 5,6],
+            'min_samples_leaf': [1, 2,4,8]}
 
 # gbr_gscv = GridSearchCV(estimator= gbr, param_grid=p_grid, n_jobs = -1, verbose=1, scoring='r2')
 

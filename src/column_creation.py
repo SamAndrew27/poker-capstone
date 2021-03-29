@@ -13,7 +13,7 @@ def load_df():
     return df 
 
 
-def fill_columns(df):
+def fill_columns(df, fill_BB_nans = False):
     df['buyin'] = df['HandHistory'].apply(lambda row: buyin(row)) 
 
     df['gametype'] = df['HandHistory'].apply(lambda x: gametype(x))
@@ -44,8 +44,9 @@ def fill_columns(df):
     df['position'] = df['HandHistory'].apply(lambda x: position(x))
     
     df['BB'] = df['blinds'].apply(lambda x: BB(x))
-
-    df = fix_BB_nans(df) # consider removing? 
+    
+    if fill_BB_nans == True:
+        df = fix_BB_nans(df) # consider removing? # way I did this causes a warning 
     
     df['BB_in_stack'] = df.apply(lambda x: BB_in_stack(x['starting_stack'], x['BB']), axis = 1)
 
@@ -296,19 +297,20 @@ def position(x):
     hero_found = False
     result = None 
     hero_pos = 0
-    
-    for elem in x:
+
+    for elem in x: # find all initial seatings
         if 'dealer' in elem:
             pos_lst.append(elem)
 
             
     for idx, elem in enumerate(pos_lst):
-        if 'dealer="1"':
+        if 'dealer="1"' in elem:
             dealer_pos = idx
             dealer_exists = True
+            break
         
     if dealer_exists:
-        if dealer_pos < len(pos_lst) - 1:
+        if dealer_pos != len(pos_lst) - 1:
             beginning = pos_lst[dealer_pos + 1 : ]
             rest = pos_lst[ : dealer_pos + 1]
             for elem in beginning:
@@ -341,15 +343,16 @@ def position(x):
     if hero_found:
         result = hero_pos / len(pos_lst)
     
-    return result 
+    return result
 
 
 
 
 def BB(x): # did this super jankily, definitely return. just wanna see if i can get this loosely working
   
-    def look_for_blinds(blinds):
+    def look_for_blinds(blinds_column):
         result = None 
+        blinds = blinds_column.copy()
         if len(blinds) == 2:
             if max(blinds) / min(blinds) == 2 or max(blinds) < 0.5:
                 result = max(x)

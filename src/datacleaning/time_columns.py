@@ -1,12 +1,16 @@
 import pandas as pd 
 import numpy as np 
+from datetime import timedelta
+
 def fill_time_columns(df):
 
-    df['hour'] = df['HandHistoryTimestamp'].apply(lambda x: pd.to_datetime(x).hour) # will need to determine degree to which time is offset
+    df['HandHistoryTimestamp'] = df['HandHistoryTimestamp'].apply(lambda x: pd.to_datetime(x) - timedelta(hours=6)) # remove 6 hours from timestamp to get it into mountain time 
+
+    df['hour'] = df['HandHistoryTimestamp'].apply(lambda x: x.hour) # will need to determine degree to which time is offset
 
     df['year_month_day'] = pd.to_datetime(df['HandHistoryTimestamp']).dt.to_period('D').dt.to_timestamp()  # will need to determine degree to which time is offset
 
-    df['days_since_start'] = df['year_month_day'].apply(lambda x: (x - pd.to_datetime('2019-10-24 00:00:00')).days)
+    df['days_since_start'] = df['year_month_day'].apply(lambda x: (x - pd.to_datetime('2019-10-23 00:00:00')).days)
 
     f_dic = frequency_dict(df)
 

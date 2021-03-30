@@ -40,6 +40,19 @@ def read_in_and_split():
 
     return X_train, X_test, y_train, y_test 
 
+
+def read_in_return_Xy():
+    df = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/train_tournaments.csv')
+    X = df[['buyin', 'total_players', 'position', 
+        'suited',  'low_card','high_card','card_rank','hour',
+        'days_since_start', 'hand_frequency', 'outcome_relative_to_start']]
+
+    y = X['outcome_relative_to_start']
+    del X['outcome_relative_to_start']
+
+    return X, y 
+
+
 if __name__ == "__main__":
 
     X_train, X_test, y_train, y_test  = read_in_and_split()

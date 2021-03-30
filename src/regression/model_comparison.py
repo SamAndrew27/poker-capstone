@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def column_combinations(): # all possible combinations of columns (that we are considering)
     column_list = []
-    base_list = ['buyin', 'total_players', 'position', 'suited',  'low_card','high_card','card_rank'] # list of stuff that will always be there
+    base_list = ['buyin', 'BB_in_stack', 'total_players', 'position', 'suited',  'low_card','high_card','card_rank'] # list of stuff that will always be there
     column_list.append(base_list)
     time_columns = ['hour','days_since_start', 'hand_frequency'] # list of stuff that won't always be there
     r = [1,2,3] # number of possible combinations
@@ -35,20 +35,30 @@ def test_different_models():
     X = pd.DataFrame(data = SS.fit_transform(X), columns = X_total_cols)
     y = y.apply(lambda x: np.log(x + 1))
 
-    result = pd.DataFrame(columns=['model', 'columns', 'r2', 'r2_adjusted']) 
+    result = pd.DataFrame(columns=['model', 'columns', 'r2', 'r2_adjusted', 'mse']) 
     # X_test = SS.transform(X_train) # pretty sure I should use CV to compare models, not the testing data
     # y_test = np.log(y_test)
     col_lst = column_combinations()
-
+    model_dic = {0:'XGB', 1:'RandomForest' , 2: 'GradientBoost', 3: 'AdaBoost', 4:'KNN', 5:'Ridge', 6: 'Lasso'}
     model_lst = [XGBRegressor(), RandomForestRegressor(), GradientBoostingRegressor(), AdaBoostRegressor(), KNeighborsRegressor(), Ridge(), Lasso()]
     count = 0
     for idx, model in enumerate(model_lst):
         for cols in col_lst:
             X_subset = X[cols]
             X_cols = list(X_subset.columns)
-            r2 = cv(model, X_subset, y)
+            r2, mse = cv(model, X_subset, y)
             adjusted = 1 - (1-r2) * ((len(y) - 1) / (len(y) - len(X_cols) -1  )) # r2 adjusted
-            result.loc[count] = [idx, cols, r2, adjusted] # can i index like this? 
+
+            X_cols.remove('buyin')# removing columns for ease of reading results
+            X_cols.remove('suited')  
+            X_cols.remove('position')
+            X_cols.remove('total_players')
+            X_cols.remove('card_rank')
+            X_cols.remove('low_card')
+            X_cols.remove('high_card')
+            X_cols.remove('BB_in_stack')
+        
+            result.loc[count] = [model_dic[idx], X_cols, r2, adjusted, mse] # can i index like this? 
             count += 1
 
     return result 
@@ -56,7 +66,14 @@ def test_different_models():
 
 def cv(model, X, y):
     r2_score = cross_val_score(model, X, y, n_jobs = -1, scoring= 'r2')
-    return np.mean(r2_score) 
+    mse = cross_val_score(model, X, y, n_jobs = -1, scoring= 'neg_mean_squared_error')
+
+    return np.mean(r2_score), np.mean(-mse)
+
+
+
+
+
 
 if __name__ == "__main__":
     results = test_different_models()

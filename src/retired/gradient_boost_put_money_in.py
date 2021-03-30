@@ -34,7 +34,6 @@ def grid_search_gbr(X, y, param_grid = None):
 
     gbr_gscv.fit(X, y)
 
-    print(gbr_gscv.cv_results_)
     print(gbr_gscv.best_estimator_)
     print(gbr_gscv.best_score_)   
 

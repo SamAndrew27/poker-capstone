@@ -10,12 +10,8 @@ df = fill_columns(df)
 
 X, y = X_y_regression(df)
 
-def gbr_cv(X, y, lr = .05, mf = 2, md = 2, subsamp = .75):
-    gbr = GradientBoostingRegressor(learning_rate= lr, max_depth= md, max_features= mf, subsample= subsamp)
-    r2_score = cross_val_score(gbr, X, y, n_jobs = -1, scoring= 'r2')
-    mse = cross_val_score(gbr, X, y, n_jobs = -1, scoring= 'neg_mean_squared_error')
 
-    return f'R2: {np.mean(r2_score)} - MSE: {-np.mean(mse)}' 
+
 
 
 

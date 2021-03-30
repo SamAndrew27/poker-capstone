@@ -16,9 +16,9 @@ def load_df():
 def fill_columns(df, fill_BB_nans = False):
     df['buyin'] = df['HandHistory'].apply(lambda row: buyin(row)) 
 
-    df['gametype'] = df['HandHistory'].apply(lambda x: gametype(x))
+    df['cash_or_tourn'] = df['HandHistory'].apply(lambda x: gametype(x)) # outputs HoldEm or something for tournaments
 
-    df['my_blind_anti_total'] = df.HandHistory.apply(lambda x: my_blind_anti_total(x))
+    df['my_blind_anti_total'] = df['HandHistory'].apply(lambda x: my_blind_anti_total(x))
 
     df['the_deck'] = df['HandHistory'].apply(lambda row: possible_cards(row))
 
@@ -42,11 +42,12 @@ def fill_columns(df, fill_BB_nans = False):
     
     df['card_rank'] = df['my_cards'].apply(lambda x: cards_numeric(x))
     
+    # MUST BE EDITED TO USE EVERYTHING, nans caused by occasionally absent dealer (even tho there is one effectively)
     df['position'] = df['HandHistory'].apply(lambda x: position(x))
     
     df['BB'] = df['blinds'].apply(lambda x: BB(x))
     
-    if fill_BB_nans == True:
+    if fill_BB_nans == True: # current function doesn't consider cash if i'm thinking correctly
         df = fix_BB_nans(df) # consider removing? # way I did this causes a warning 
     
     df['BB_in_stack'] = df.apply(lambda x: BB_in_stack(x['starting_stack'], x['BB']), axis = 1)
@@ -87,6 +88,8 @@ def fill_columns(df, fill_BB_nans = False):
     df['low_card'] = df['my_cards'].apply(lambda x: low_card(x)) # redundant with gap/high card? 
 
     df['table_max_players'] = df['HandHistory'].apply(lambda x: table_max(x))
+
+    df['outcome_relative_to_start'] = (df['starting_stack'] + df['net_outcome']) / df['starting_stack']  
 
     return df
 
@@ -286,7 +289,7 @@ def cards_numeric(x):
                 
                     
     return result # I elected not to round up as the formula dictates, not sure what benefit it would have in this scenario
-            
+ 
 #def bb_in_stack(x):
 
 # get BB out of this one? not the actual BB, just if i am the BB 
@@ -322,7 +325,7 @@ def position(x):
                     break 
                 else:
                     hero_counter += 1
-            if hero_found == False:
+            if hero_found == False: # if hero not found in 1st list
                 for elem in rest:
                     if 'name="Hero"' in elem:
                         hero_counter += 1
@@ -340,7 +343,7 @@ def position(x):
                     break
                 else:
                     hero_counter += 1
-    
+
     if hero_found:
         result = hero_pos / len(pos_lst)
     

@@ -31,6 +31,6 @@ def remove_unused_columns(df):
        'river_bet', 'preflop_bet', 'high_card', 'suited', 'pocket_pair', 'gap',
        'low_card', 'table_max_players', 'outcome_relative_to_start']]
 
-
+    return result 
 if __name__ == "__main__":
     pass 

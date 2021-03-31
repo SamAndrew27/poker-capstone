@@ -91,22 +91,29 @@ def partial_plot_multiple(X,y,model, features_to_plot):
     plt.show() # will change this to a return statement once i'm ready to start saving plots
 
 
+
+# NOT USABLE IF train_tournaments not in SRC folder 
 # putting train_tournaments in the regression folder in an attempt to get this working 
 # still not working
-def trying_to_get_NN_to_work():
-    df = pd.read_csv('train_tournaments.csv')
-    X = df[['buyin', 'total_players', 'position','BB_in_stack', 
-        'suited',  'low_card','high_card','card_rank', 'outcome_relative_to_start']]
+# just couples read in and scaled & logged X_y
+# def trying_to_get_NN_to_work():
+#     df = pd.read_csv('train_tournaments.csv')
+#     X = df[['buyin', 'total_players', 'position','BB_in_stack', 
+#         'suited',  'low_card','high_card','card_rank', 'outcome_relative_to_start']]
 
-    y = X['outcome_relative_to_start']
-    del X['outcome_relative_to_start']
-    SS = StandardScaler()
-    X_total_cols = list(X.columns)
-    X = pd.DataFrame(data = SS.fit_transform(X), columns = X_total_cols)
-    y = y.apply(lambda x: np.log(x + 1))
+#     y = X['outcome_relative_to_start']
+#     del X['outcome_relative_to_start']
+#     SS = StandardScaler()
+#     X_total_cols = list(X.columns)
+#     X = pd.DataFrame(data = SS.fit_transform(X), columns = X_total_cols)
+#     y = y.apply(lambda x: np.log(x + 1))
 
 
-    return X, y 
+#     return X, y 
+
+
+
+
 
 if __name__ == "__main__":
     X, y = scaled_and_logged_X_y()

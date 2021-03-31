@@ -27,7 +27,11 @@ def fill_dependent_columns(df, fill_BB_nans = False):
   
     df['outcome_relative_to_start'] = (df['starting_stack'] + df['net_outcome']) / df['starting_stack']  
 
+    df['made_or_lost'] = df['outcome_relative_to_start'].apply(lambda x: made_or_lost(x))
+
     return df
+
+
 
 
 def blinds(x): # hand history & gametype 
@@ -189,3 +193,13 @@ def fix_BB_nans(input_df):
 
                          
     return df
+
+# looks at whether outcome relative to start is <1 or is >=1 
+# negative class is losing $
+# positive class is making $
+# this may be redundant, but rather than checking the validity of those columns made a while ago lets do this
+def made_or_lost(x):
+    if x >= 1:
+        return 1
+    else:
+        return 0 

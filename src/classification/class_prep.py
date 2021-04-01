@@ -4,6 +4,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV, train_test_split, KFold
 from sklearn.metrics import f1_score, confusion_matrix, accuracy_score, recall_score, precision_score
 
+#split into two
+
+def read_in_holdout_no_time():
+    X = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/holdout_classification_tournaments.csv')
+    X = X.drop(X.columns[0], axis = 1)
+    y = X['made_or_lost']
+    X =  X.drop(['made_or_lost', 'hour', 'days_since_start', 'hand_frequency'], axis = 1)
+    return X, y 
+
 def read_in_data():
     df = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/train_classification_tournaments.csv')
     df = df.drop(df.columns[0], axis = 1)
@@ -72,6 +81,8 @@ def X_y_train_test():
     return X_train, X_test, y_train, y_test
 
 
+########################################################################
+
 def threshold_testing(X, y, model,thresholds, num_folds=5):
 
     results = pd.DataFrame(columns=['thresh', 'f1', 'accuracy', 'precision','recall'],index=list(range(0, len(thresholds)))) # stores the results of all theshold tests
@@ -109,11 +120,11 @@ def threshold_testing(X, y, model,thresholds, num_folds=5):
 
     return results
 
-def confusion(X,y,model,thresh):
+def confusion(X,y,model,threshold):
     X_train, X_test, y_train, y_test = train_test_split(X, y)
     model.fit(X_train,y_train)
     y_prob = model.predict_proba(X_test)
-    y_pred = [1 if x >= thresh else 0 for x in y_prob[:, 1]] # changing values according th threshold
+    y_pred = [1 if x >= threshold else 0 for x in y_prob[:, 1]] # changing values according th threshold
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
     result = {'TP': tp, 'FP': fp, 'TN': tn, 'FN': fn}
     return result
@@ -125,7 +136,7 @@ def confusion_ratios(X,y,model,thresh, iterations = 100): # specific ratios i'm 
     npv_lst = []
     weight_lst = []
     for num in range(iterations):
-        confusion_dic = confusion(X,y,model,thresh)
+        confusion_dic = confusion(X,y,model,threshold)
         # precision done by hand, followed by NPV done by hand
         precision = confusion_dic['TP'] / (confusion_dic['FP'] + confusion_dic['TP'])
         npv =  confusion_dic['TN'] / ( confusion_dic['TN'] + confusion_dic['FN'])

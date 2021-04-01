@@ -1,0 +1,9 @@
+*.csv
+*.data
+*.xml
+*.df
+*.stat
+*.txt
+*.db
+*.db-wal
+*.db-smh

@@ -1,6 +1,6 @@
 # How Can I Win More Poker Hands (and lose less)?
 
-### Me Winning at Poker
+### Me Winning at Poker 
 ![Hud Image](/images/table.PNG)
 
 ## Goal
@@ -16,7 +16,7 @@ In high school I dabbled in online bitcoin poker, but it wasn’t until college 
 After college, I once again started playing bitcoin poker, but I decided to stop for a few reasons. I was a recreational player with limited knowledge of the game, and bitcoin prices were getting scary high. I became uncomfortable with the bitcoin stakes, and so I began to play on a site that used good old American dollars as its metric. This site also allowed something that the bitcoin site did not, a HUD display. A HUD display records all the actions you and your opponents make, and also tracks how much money you are earning or losing. I’m by no means a great poker player, but I enjoy it and would like to become a better player. I hope to use the HUD database to determine the expected outcome of any given poker hand.
 
 ## The Data 
-The data is stored in several SQL databases, but to limit the scope of the project I decided to focus on the database that contained a record of every individual hand of poker I had played. It contained over fifty thousand rows, each representing a single hand of poker. For each of these data points there were seven columns, but the one that caught my eye was the HandHistory column, which contained the progression of every poker hand, stored as a single string. After the strings were split so that they could be more easily interpreted, they looked like this: 
+The data is stored in several SQL databases, but to limit the scope of the project I decided to focus on the database that contained a record of every individual hand of poker I had played. The data was converted into a pandas DataFrame. It contained over fifty thousand rows, each representing a single hand of poker. For each of these data points there were seven columns, but the one that caught my eye was the HandHistory column, which contained the progression of every poker hand, stored as a single string. After the strings were split so that they could be more easily interpreted, they looked like this: 
 ```python
 ['<session sessioncode="2297128">',
  '<general>',

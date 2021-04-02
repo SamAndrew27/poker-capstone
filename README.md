@@ -1,6 +1,5 @@
 # How Can I Win More Poker Hands (and lose less)?
 
-### Me Winning at Poker 
 ![Hud Image](/images/table.PNG)
 
 ## Goal

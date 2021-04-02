@@ -131,7 +131,7 @@ def confusion(X,y,model,threshold):
 
 #rather than coding out something better (using metrics) Im just going to run this a bunch of times to come to a conclusion about which model is better
 #sorry, sh
-def confusion_ratios(X,y,model,thresh, iterations = 100): # specific ratios i'm looking at
+def confusion_ratios(X,y,model,threshold, iterations = 100): # specific ratios i'm looking at
     pre_lst = []
     npv_lst = []
     weight_lst = []

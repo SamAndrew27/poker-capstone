@@ -25,7 +25,7 @@ def cv(X, y, model):
     return f'R2: {np.mean(r2_score)}' 
 
 if __name__ == "__main__":
-
+    print(cv(X_no_time, y_no_time, gb))
 
     param_grid = {'learning_rate': [.05, .1, .15],
                 'n_estimators': [60,70,80,90,100],
@@ -35,7 +35,7 @@ if __name__ == "__main__":
                 'max_depth': [2, 3,4],
                 'subsample': [1.,.15,.25, .35, .5]}
 
-    grid_search(X_scaled, y_logged, gb, param_grid)
+    # grid_search(X_scaled, y_logged, gb, param_grid)
     # print(np.mean(X_all))
     #print(X_no_time['position'].value_counts())
     # print(X_all.info())

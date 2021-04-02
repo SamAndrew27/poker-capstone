@@ -39,6 +39,6 @@ def partial_plot_multiple(X, y, model, features_to_plot, title, show=True, plot_
 if __name__ == "__main__":
     plt.rcParams.update({'font.size': 25})
     print(X.info())
-    print(partial_plot(X, y, grad_boost, title = 'Card Rank', feature_to_plot=8))
+    print(partial_plot(X, y, grad_boost, title = 'Position', feature_to_plot=3))
     # partial_plot_multiple(X, y, grad_boost, features_to_plot=[5,4], title='High/Low Card', show=False, plot_file='high_low.png')
     # print(X.info())

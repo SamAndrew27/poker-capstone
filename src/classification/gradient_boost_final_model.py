@@ -29,22 +29,39 @@ def test_holdout(model, X, y, X_holdout, y_holdout, threshold):
     results['roc_auc'] = roc_auc_score(y_holdout, y_pred)
 
 
-    return results, [tn, fp, fn, tp ]
-'''
-def test_holdout_average(model, X, y, X_holdout, y_holdout, thresholdnum_iterations=100):
+    return results, tn, fp, fn, tp 
+
+def test_holdout_average(model, X, y, X_holdout, y_holdout, threshold, num_iterations=100):
     nvp = []
     f1 = []
-    acc = []
-    pre = []
-    rec = []
-    rocauc = []
-
+    accuracy = []
+    recall = []
+    brier = []
+    roc_auc = []
+    tn_lst = []
+    fp_lst = []
+    fn_lst = []
+    tp_lst = []
+   
     for num in range(num_iterations):
+        results, tn, fp, fn, tp = test_holdout(model, X, y, X_holdout, y_holdout, threshold=.58)
+        nvp.append(results['npv'])
+        f1.append(results['f1'])
+        accuracy.append(results['accuracy'])
+        recall.append(results['recall'])
+        brier.append(results['brier'])
+        roc_auc.append(results['roc_auc'])
 
-'''
+        tn_lst.append(tn)
+        fp_lst.append(fp)
+        fn_lst.append(fn)
+        tp_lst.append(tp)
+
+    return np.mean(nvp), np.mean(f1), np.mean(accuracy), np.mean(recall), np.mean(brier), np.mean(roc_auc), np.mean(tn_lst), np.mean(fp_lst), np.mean(fn_lst), np.mean(tp_lst), 
+        
 if __name__ == "__main__":
 
-    print(test_holdout(grad_boost, X, y, X_holdout, y_holdout, threshold = .58))
-    print(X.info())
-    print(grad_boost.feature_importances_)
-    print(np.mean(y_holdout))
+    print(test_holdout_average(grad_boost, X, y, X_holdout, y_holdout, threshold = .58, num_iterations= 1000))
+    # print(X.info())
+    # print(grad_boost.feature_importances_)
+    # print(np.mean(y_holdout))

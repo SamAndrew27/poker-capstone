@@ -1,7 +1,6 @@
 from sklearn.ensemble import GradientBoostingClassifier
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 from class_prep import read_in_return_Xy_no_time
 from sklearn.inspection import plot_partial_dependence
 
@@ -28,7 +27,7 @@ def partial_plot_multiple(X, y, model, features_to_plot, title, show=True, plot_
 
     fig, ax = plt.subplots(figsize=(12,12))
 
-    display = plot_partial_dependence(model, X, [features_to_plot], ax=ax)
+    display = plot_partial_dependence(model, X, [features_to_plot], ax=ax)# takes list of 2 features to plot
     plt.title(title)
     if show:
         plt.show()    

@@ -167,16 +167,33 @@ After performing 1000 cross validations on each model, I found the addition of m
 Results
 Using Gradient Boost with a threshold of 0.58 my model had a precision of about 0.675, an npv of 0.525, and an accuracy of 0.62. This meant that I could consider a positive prediction to be correct ~2/3  of the time, with a negative prediction being accurate slightly over half of the time. 
 
+### Metrics
+* NVP: 0.53
+* F1: 0.69
+* Accuracy: 0.62
+* Recall: 0.69
+* Brier: 0.38
+* ROC AUC: 0.61
+* True Positives:888
+* False Positives:408
+* True Negatives:448
+* False Negatives:395
+
+
 The model I created will hopefully push me in the direction of becoming a better poker player. I will put very little stock in a negative prediction, but I should very seriously consider any hands that it predicts I will win. While it is far from a perfect predictor, I can use it for situations where I feel that the expected value of playing a hand is close to that of folding it. In Data Science terms, I will continue to be the primary model making predictions at the poker table, but my Gradient Boosting model can serve as a secondary model that informs my decision making process. 
 
 I also hope to be able to analyze Partial Dependence plots to help identify leaks in game. I am yet to do much serious analysis of these,  but one initial takeaway is that I tend to perform much worse when I have more big blinds in my stack. Given what I know about my playing style, this means I am probably playing too passively when this is the case. 
 
-![Aces](/images/roc_curve.png)
+
+![roc_curve](/images/roc_curve.png)
+
 
 
 ## Next Steps
-There are a number of avenues I could explore in order to expand upon the work done here. The first that comes to mind is looking at the situations in which my opponents showed their hands at the end of a round of poker. By doing this, I could look at how much equity I had in a hand, rather than just the net outcome after all the cards have hit the felt. My current target variable is partly a product of luck, while equity is not. At present the small sample size of such situations I have available to me makes this a troubling task. One solution might be to use the poker site I play on to try to get this data. After a certain amount of days they allow you to see what cards your opponent had. This would greatly increase the sample size available to me if I was able to combine that data with what I presently have. 
+There are a number of avenues I could explore in order to expand upon the work done here. The first that comes to mind is looking at the situations in which my opponents showed their hands at the end of a round of poker. By doing this, I could look at how much equity I had in a hand, rather than just the net outcome after all the cards have hit the felt. My current target variable is partly a product of luck, while equity is not. At present, the small sample size of such situations available to me makes this a troubling task. One solution might be to use the poker site where I play to try to get this data. After a certain number of days it allows you to see what cards your opponent had. This would greatly increase the sample size available to me if I were able to combine that data with what I presently have. 
 
-I could also attempt to insert time as a feature to see if my playing style has resulted in a higher rate of winning. Although I elected not to do it for the model I currently built, it may have greater utility with another type of modeling process.I may also attempt to create other features in my dataset. I would like to compute some statistics that capture some aspects of my opponents’ playing styles. 
+I could also attempt to insert time as a feature to see if my playing style has resulted in a higher rate of winning. Although I elected not to do it for the model I currently built, it may have greater utility with another type of modeling process. I may also attempt to create other features in my dataset. I would like to compute some statistics that capture some aspects of my opponents’ playing styles. 
 
 Another avenue I hope to explore is post flop situations. This would mean working with a smaller dataset than I have presently, but I have already created features for much of this data. A model based upon this data would hopefully allow me to improve my strategy beyond the single decision my current model aims to inform. 
+
+

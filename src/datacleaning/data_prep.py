@@ -18,6 +18,7 @@ def put_in_money(df): # seperates tournaments where I put in $ versus tournaeent
     mask = df['money_beyond_blind'] == 1
     return df[mask]
 
+''' # used this for regression, ignore now. 
 def holdout_and_primary_tournaments(): # splits data into training/holdout
     df = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/updated_DF.csv')
     df = get_tournaments(df)
@@ -28,7 +29,7 @@ def holdout_and_primary_tournaments(): # splits data into training/holdout
 
     primary.to_csv('train_tournaments.csv')
     holdout.to_csv('holdout_tournaments.csv')
-    
+'''
 
 # includes removing columns used in the creation of other columns
 # just removing everything that couldn't potentially be used for model building
@@ -74,5 +75,3 @@ if __name__ == "__main__":
     # print(train.info())
     # print(hold.info())
 
-    df = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/df_for_classification.csv')
-    print(df.info())

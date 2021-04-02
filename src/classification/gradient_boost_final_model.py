@@ -17,21 +17,34 @@ def test_holdout(model, X, y, X_holdout, y_holdout, threshold):
     y_prob = model.predict_proba(X_holdout)
     y_pred = [1 if x >= threshold else 0 for x in y_prob[:, 1]]
 
+
+    tn, fp, fn, tp = confusion_matrix(y_holdout, y_pred).ravel()
+
+    results['npv'] = tn / (tn + fn)
     results['f1'] = f1_score(y_holdout, y_pred)
     results['accuracy'] = accuracy_score(y_holdout, y_pred)
     results['precision'] = precision_score(y_holdout, y_pred)
     results['recall'] = recall_score(y_holdout, y_pred)
     results['brier'] = brier_score_loss(y_holdout, y_pred)
     results['roc_auc'] = roc_auc_score(y_holdout, y_pred)
-    tn, fp, fn, tp = confusion_matrix(y_holdout, y_pred).ravel()
-    results['npv'] = tn / (tn + fn)
+
 
     return results, [tn, fp, fn, tp ]
+'''
+def test_holdout_average(model, X, y, X_holdout, y_holdout, thresholdnum_iterations=100):
+    nvp = []
+    f1 = []
+    acc = []
+    pre = []
+    rec = []
+    rocauc = []
 
+    for num in range(num_iterations):
 
-
-
+'''
 if __name__ == "__main__":
 
     print(test_holdout(grad_boost, X, y, X_holdout, y_holdout, threshold = .58))
-
+    print(X.info())
+    print(grad_boost.feature_importances_)
+    print(np.mean(y_holdout))

@@ -69,7 +69,10 @@ def holdout_training_classification():
     
 
 if __name__ == "__main__":
-    train = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/train_classification_tournaments.csv')
-    hold = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/holdout_classification_tournaments.csv')
-    print(train.made_or_lost.value_counts())
-    print(hold.made_or_lost.value_counts())
+    # train = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/train_classification_tournaments.csv')
+    # hold = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/holdout_classification_tournaments.csv')
+    # print(train.info())
+    # print(hold.info())
+
+    df = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/df_for_classification.csv')
+    print(df.info())

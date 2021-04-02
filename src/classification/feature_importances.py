@@ -17,7 +17,7 @@ def partial_plot(X, y, model, feature_to_plot, title, show=True, plot_file=None)
     fig, ax = plt.subplots(figsize=(12,12))
 
     display  = plot_partial_dependence(model, X, [feature_to_plot], ax=ax)
-
+    plt.title(title)
     if show:
         plt.show()
     else:
@@ -37,8 +37,8 @@ def partial_plot_multiple(X, y, model, features_to_plot, title, show=True, plot_
 
 
 if __name__ == "__main__":
-    plt.rcParams.update({'font.size': 18})
-
-    # print(partial_plot(X, y, grad_boost, feature_to_plot=9))
-    partial_plot_multiple(X, y, grad_boost, features_to_plot=[5,4], title='High/Low Card', show=False, plot_file='high_low.png')
+    plt.rcParams.update({'font.size': 25})
+    print(X.info())
+    print(partial_plot(X, y, grad_boost, title = 'Card Rank', feature_to_plot=8))
+    # partial_plot_multiple(X, y, grad_boost, features_to_plot=[5,4], title='High/Low Card', show=False, plot_file='high_low.png')
     # print(X.info())

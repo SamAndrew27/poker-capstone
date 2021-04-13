@@ -1,9 +1,8 @@
 import pandas as pd 
 import numpy as np 
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, plot_roc_curve
 from class_prep import read_in_holdout_no_time, read_in_return_Xy_no_time
 import matplotlib.pyplot as plt 
-from class_prep import read_in_holdout_no_time, read_in_return_Xy_no_time
 from sklearn.ensemble import GradientBoostingClassifier
 
 
@@ -39,7 +38,19 @@ def plot_roc(model, X, y, X_holdout, y_holdout, threshold, savefig=False):
 
 
 
-if __name__ == "__main__":
-    plt.rcParams.update({'font.size': 18})
+def plot_roc_non_thresh(model, X, y, savefig=False):
 
-    plot_roc(grad_boost, X, y, X_holdout, y_holdout, threshold = .58, savefig=True)
+    model.fit(X,y)
+    plot_roc_curve(model, X, y)
+    plt.plot([0, 1], [0, 1],'r--')
+    plt.legend("")
+    plt.title('ROC Curve of Model')
+    if savefig:
+        plt.savefig('roc_curve.png', dpi=fig.dpi)
+    else:
+        plt.show()
+
+if __name__ == "__main__":
+    plt.rcParams.update({'font.size': 24})
+
+    plot_roc_non_thresh(grad_boost, X, y)

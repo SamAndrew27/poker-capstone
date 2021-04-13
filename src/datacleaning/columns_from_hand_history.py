@@ -8,7 +8,7 @@ def fill_HH_columns(df):
 
     df['my_blind_anti_total'] = df['HandHistory'].apply(lambda x: my_blind_anti_total(x)) # how much I put in as default (blind(/anti))
 
-    #df['the_deck'] = df['HandHistory'].apply(lambda row: possible_cards(row))
+    #df['the_deck'] = df['HandHistory'].apply(lambda row: possible_cards(row)) # retiring this function, could probably be removed entirely 
 
     df['my_cards'] = df['HandHistory'].apply(lambda row: hole_cards(row)) # my cards 
     
@@ -26,7 +26,12 @@ def fill_HH_columns(df):
 
     df['table_max_players'] = df['HandHistory'].apply(lambda x: table_max(x))
 
+    # pretty sure this requires edits for edge case, refer to function below
+    df['bets_before_my_preflop_action'] = df.HandHistory.apply(lambda x: bets_before_my_preflop_action(x))
 
+    df['action_type'] = df.HandHistory.apply(lambda x: action_type(x))
+
+    df['player_names'] = df['HandHistory'].apply(lambda x: player_names(x)) # for use by other functions 
     return df
 
 
@@ -59,23 +64,26 @@ def hole_cards(x):
     c1 = ''
     c2 = ''
     for elem in x:
-        if 'Pocket' in elem and 'Hero' in elem:
-            temp = elem.split(' ')
+        if 'Pocket' in elem and 'Hero' in elem: # looks for string where my cards are listed
+            temp = elem.split(' ') # split and iterate through that string
             for s in temp:
-                if 'Hero' in s:
+                if 'Hero' in s: # gets card 1 
                     c1 = s.replace('player="Hero">', '')
                     c1 = c1.replace('0', '')
-                if '</cards>' in s:
+                if '</cards>' in s: # gets card 2
                     c2 = s.replace('</cards>', '')
                     c2 = c2.replace('0', '')
     if c1 != '':
-        cards = [c1, c2]
+        cards = [c1, c2] # puts cards if list if they exist
         return cards
     else:
         return None
 
 
-def start_stack(x):
+def start_stack(x): 
+    '''
+    finds amount of chips hero has at start of hand
+    '''
     result = None
     temp = ''
     for elem in x:
@@ -93,6 +101,9 @@ def start_stack(x):
 
 # probably not going to be used, but may be useful so leaving for now
 def tournament_type(x):
+    '''
+    find the type of tournament/game type 
+    '''
     result = ''
     cut = 0
     counter = 0
@@ -118,6 +129,9 @@ def tournament_type(x):
     return result 
 
 def won(x):
+    '''
+    amount I won in the hand 
+    '''
     won = ''
     temp = ''
     result = 0
@@ -136,6 +150,9 @@ def won(x):
 
 
 def bet(x):
+    '''
+    total amount that I bet 
+    '''
     bet = ''
     temp = ''
     result = None
@@ -152,6 +169,9 @@ def bet(x):
     return result 
 
 def total_players(x):
+    '''
+    number of players in the hand 
+    '''
     count = 0
     for elem in x:
         if 'Pocket' in elem:
@@ -160,6 +180,12 @@ def total_players(x):
 
 
 def position(x):
+    '''
+    finds what seat I was sitting in
+    1st position (generally small blind) is considered a 1
+    last postion (generally dealer seat) = the total number of players at the table
+    these values are returned as fractions, so 1/x, in the case of last position x/x 
+    '''
     pos_lst = []
     dealer_pos = 0
     dealer_exists = False
@@ -255,11 +281,79 @@ def my_blind_anti_total(x):
 
 
 
+def bets_before_my_preflop_action(x):
+    '''
+    finds bets before my bet
+    does not include blinds, but should it???
+    '''
+    start = 0
+    stop = 0
+    total=0
+    subset = []
+    for idx, elem in enumerate(x): # find beginning/end of preflop action
+        if 'Pocket' in elem:
+            start = idx
+        if '<round no="2">' in elem: # WILL probably have to change this for instances when there was no round2
+
+            stop = idx
+    if stop != 0:
+        subset = x[start+1:stop-1] 
+        for idx, elem in enumerate(subset): # iterates through subset to find my first action 
+            if 'Hero' in elem:
+                subset = subset[:idx]
+                break 
+        for elem in subset:
+            for elem in elem.split():
+                if 'sum' in elem:
+                    total += float(elem.replace('sum="', '').replace('"',''))
+    
+    return total
+        
+
+def action_type(x):
+    '''
+    finds all action types a player made preflop 
+    '''
+    result = {}
+    start = 0
+    stop = 0
+    player = None
+    action_type = None 
+    for idx, elem in enumerate(x): # finds start of preflop action 
+        if 'Pocket' in elem:
+            start = idx
+    subset = x[start+1:]
+    for idx, elem in enumerate(subset):# finds end of preflop action
+        if '</round>' in elem:
+            stop = idx
+            break 
+    subset = subset[:stop]
+    
+    for elem in subset: # iterating through preflop action to find player/type 
+        for sub_elem in elem.split():
+            if 'player' in sub_elem:
+                player = sub_elem.replace('player="', '').replace('"', '')
+            if 'type' in sub_elem:
+                action_type = int(sub_elem.replace('type="', '').replace('"', ''))
+        if player in result: # checks to see if player has already taken an action 
+            break
+        else:
+            result[player] = action_type
+    return result 
 
 
 
-
-
+def player_names(x):
+    player = None
+    result = []
+    for elem in x:
+        if 'dealer' in elem: 
+            for sub_elem in elem.split(): # finds lines where player names are specified 
+                if 'name' in sub_elem:
+                    player = sub_elem.replace('name="', '').replace('"', '')
+                    result.append(player)
+                    break 
+    return result 
 
 # almost certainly won't use this, application too difficult for scope of this week 
 # def possible_cards(x): # will do this first, and then remove cards in seperate functions, still not sure how to deal with all in vs seeing later action

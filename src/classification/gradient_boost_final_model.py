@@ -35,6 +35,7 @@ def test_holdout_average(model, X, y, X_holdout, y_holdout, threshold, num_itera
     nvp = []
     f1 = []
     accuracy = []
+    precision = []
     recall = []
     brier = []
     roc_auc = []
@@ -48,6 +49,7 @@ def test_holdout_average(model, X, y, X_holdout, y_holdout, threshold, num_itera
         nvp.append(results['npv'])
         f1.append(results['f1'])
         accuracy.append(results['accuracy'])
+        precision.append(results['precision'])
         recall.append(results['recall'])
         brier.append(results['brier'])
         roc_auc.append(results['roc_auc'])
@@ -57,7 +59,7 @@ def test_holdout_average(model, X, y, X_holdout, y_holdout, threshold, num_itera
         fn_lst.append(fn)
         tp_lst.append(tp)
 
-    return np.mean(nvp), np.mean(f1), np.mean(accuracy), np.mean(recall), np.mean(brier), np.mean(roc_auc), np.mean(tn_lst), np.mean(fp_lst), np.mean(fn_lst), np.mean(tp_lst), 
+    return np.mean(nvp), np.mean(f1), np.mean(accuracy), np.mean(precision), np.mean(recall), np.mean(brier), np.mean(roc_auc), np.mean(tn_lst), np.mean(fp_lst), np.mean(fn_lst), np.mean(tp_lst), 
         
 if __name__ == "__main__":
 
@@ -65,3 +67,10 @@ if __name__ == "__main__":
     # print(X.info())
     # print(grad_boost.feature_importances_)
     # print(np.mean(y_holdout))
+
+
+    # 1st test
+    # (0.5416149068322982, 0.6985097439816584, 0.6311360448807855, 0.7123928293063133, 0.3688639551192146, 0.6108693118494184, 436.0, 420.0, 369.0, 914.0)
+ 
+    # 1000 iterations:
+    # (0.5318260613237492, 0.6887608697892491, 0.6247985039738196, 0.6923382696804365, 0.37520149602618047, 0.6079530133448912, 448.174, 407.826, 394.73, 888.27)

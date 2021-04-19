@@ -375,13 +375,17 @@ def players_before(x):
             break 
     subset = subset[:stop] # subset containing just preflop action 
     for elem in subset:
+        action_type = 0
         if 'Hero' in elem: # break if we find hero 
             break
         else:
             for sub_elem in elem.split():
                 if 'player' in sub_elem:
                     player_name = sub_elem.replace('player="', '').replace('"', '')
-                    players_before.append(player_name)
+                if 'type' in sub_elem:
+                    action_type = int(sub_elem.replace('type="', '').replace('"', ''))
+            if action_type!= 0:
+                players_before.append(player_name)
     return players_before
 
 def players_after(x):

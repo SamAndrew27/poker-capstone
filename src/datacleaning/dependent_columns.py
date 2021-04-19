@@ -38,6 +38,16 @@ def fill_dependent_columns(df, fill_BB_nans = False):
 
     df['vpip_players_after'] = df.apply(lambda row: vpip_players_after(row), axis=1)
 
+    df['vpip_players_before'] = df.apply(lambda row: vpip_players_before(row), axis=1)
+
+    df['num_players_before'] = df['players_acting_before_me'].apply(lambda x: len(x))
+
+    df['num_players_after'] = df['players_acting_after_me'].apply(lambda x: len(x))
+
+    df['num_actions_before_players'] = df.apply(lambda row: actions_witnessed_before(row), axis=1)
+
+    df['num_actions_after_players'] = df.apply(lambda row: actions_witnessed_after(row), axis=1)  
+    
     return df 
 
 
@@ -288,3 +298,17 @@ def vpip_players_before(row):
                 vpips.append(vpip_dic[player])
     if len(vpips) != 0:
         return np.mean(vpips)
+
+def actions_witnessed_before(row):
+    prior_actions = row['prior_actions']
+    total = 0
+    for player in row['players_acting_before_me']:
+        total += len(prior_actions[player])
+    return total 
+
+def actions_witnessed_after(row):
+    prior_actions = row['prior_actions']
+    total = 0
+    for player in row['players_acting_after_me']:
+        total += len(prior_actions[player])
+    return total  

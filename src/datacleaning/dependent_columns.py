@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np 
 
 def fill_dependent_columns(df, fill_BB_nans = False):
 
@@ -30,6 +31,12 @@ def fill_dependent_columns(df, fill_BB_nans = False):
     df['made_or_lost'] = df['outcome_relative_to_start'].apply(lambda x: made_or_lost(x))
 
     df = prior_actions_for_stats(df)
+    
+    df['prior_actions'] = df['prior_actions'].apply(lambda x: unlist(x)) # fix the weird thing I did to create prior actions (take dictionary out of list)
+
+    df['vpip_all_players'] = df['prior_actions'].apply(lambda x: make_vpip(x))
+
+    df['vpip_players_after'] = df.apply(lambda row: vpip_players_after(row), axis=1)
 
     return df 
 
@@ -235,3 +242,49 @@ def prior_actions_for_stats(df):
 
 def make_lst(x): # definitely a better way to do this but this is easy 
     return []
+
+def unlist(x):
+    for elem in x:
+        return elem 
+
+def make_vpip(x):
+    result = {}
+    if x != {}:
+        for player, actions in x.items(): # iterate through player dictionaries
+            count = 0
+            if len(actions) != 0:
+                for action in actions: # iterate through actions
+                    if action != 0 and action != 4:
+                        count += 1
+                result[player] = count / len(actions)
+            else:
+                result[player] = 'No Hands' 
+    return result 
+                
+def vpip_players_after(row):
+    vpips = []
+    vpip_dic = row['vpip_all_players'] # dictonary of vpips of each player
+    players_after = row['players_acting_after_me']
+
+    if players_after != {}: # skips if there are no players after
+        for player in players_after: # look at all players after & find their vpip
+            if vpip_dic[player] == 'No Hands':
+                continue
+            else:
+                vpips.append(vpip_dic[player])
+    if len(vpips) != 0:
+        return np.mean(vpips)
+
+def vpip_players_before(row):
+    vpips = []
+    vpip_dic = row['vpip_all_players'] # dictonary of vpips of each player
+    players_before = row['players_acting_before_me'] # list of players acting before
+
+    if players_before != {}: # skips if there are no players after
+        for player in players_before: # look at all players after & find their vpip
+            if vpip_dic[player] == 'No Hands':
+                continue
+            else:
+                vpips.append(vpip_dic[player])
+    if len(vpips) != 0:
+        return np.mean(vpips)

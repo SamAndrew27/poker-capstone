@@ -32,6 +32,11 @@ def fill_HH_columns(df):
     df['action_type'] = df.HandHistory.apply(lambda x: action_type(x))
 
     df['player_names'] = df['HandHistory'].apply(lambda x: player_names(x)) # for use by other functions 
+
+    df['players_acting_before_me'] = df.HandHistory.apply(lambda x: players_before(x))
+
+    df['players_acting_after_me'] = df.HandHistory.apply(lambda x: players_after(x)) # this might not account for cases where action was folded leading to some players never making an action. If we end up using data for hands where some players did not have to act we will have to develop a more robust function
+
     return df
 
 
@@ -354,6 +359,65 @@ def player_names(x):
                     result.append(player)
                     break 
     return result 
+
+
+def players_before(x):
+    start = 0
+    stop = 0
+    players_before = [] # list of players before
+    for idx, elem in enumerate(x): # list of players after 
+        if 'Pocket' in elem:
+            start = idx
+    subset = x[start+1:] # subset containing preflop action until end
+    for idx, elem in enumerate(subset):
+        if '</round>' in elem:
+            stop = idx
+            break 
+    subset = subset[:stop] # subset containing just preflop action 
+    for elem in subset:
+        if 'Hero' in elem: # break if we find hero 
+            break
+        else:
+            for sub_elem in elem.split():
+                if 'player' in sub_elem:
+                    player_name = sub_elem.replace('player="', '').replace('"', '')
+                    players_before.append(player_name)
+    return players_before
+
+def players_after(x):
+    start = 0
+    stop = 0
+    hero_found = False
+    players_before = set() # set of players before
+    players_after = set()
+    for idx, elem in enumerate(x): # list of players after 
+        if 'Pocket' in elem:
+            start = idx
+    subset = x[start+1:] # subset containing preflop action until end
+    for idx, elem in enumerate(subset):
+        if '</round>' in elem:
+            stop = idx
+            break 
+    subset = subset[:stop] # subset containing just preflop action 
+    for elem in subset: 
+        if 'Hero' in elem: # set to true and skip if hero in elem
+            hero_found = True
+            continue
+        else:
+            for sub_elem in elem.split(): 
+                if 'player' in sub_elem:
+                    player_name = sub_elem.replace('player="', '').replace('"', '') 
+                    if hero_found == False: # if hero yet to act add to players before
+                        players_before.add(player_name)
+                    else:
+                        if player_name in players_before: # check to see that player hasn't already acted
+                            break
+                        else:
+                            players_after.add(player_name) # if player hasn't acted add to players after
+
+    return players_after
+
+
 
 # almost certainly won't use this, application too difficult for scope of this week 
 # def possible_cards(x): # will do this first, and then remove cards in seperate functions, still not sure how to deal with all in vs seeing later action

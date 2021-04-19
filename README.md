@@ -164,9 +164,10 @@ I decided to also look at negative predictive value (NPV). It measures the rate 
 After performing 1000 cross validations on each model, I found the addition of my lesser models added little to no predictive value. I therefore decided to use gradient boost as my main model. 
 
 Results
-Using Gradient Boost with a threshold of 0.58 my model had a precision of about 0.675, an npv of 0.525, and an accuracy of 0.62. This meant that I could consider a positive prediction to be correct ~2/3  of the time, with a negative prediction being accurate slightly over half of the time. 
+Using Gradient Boost with a threshold of 0.58 my model had a precision of about 0.69, an npv of 0.53, and an accuracy of 0.62. This meant that I could consider a positive prediction to be correct ~2/3  of the time, with a negative prediction being accurate slightly over half of the time. 
 
 ### Metrics
+* Precision: 0.69
 * NVP: 0.53
 * F1: 0.69
 * Accuracy: 0.62

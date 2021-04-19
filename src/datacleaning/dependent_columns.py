@@ -29,7 +29,9 @@ def fill_dependent_columns(df, fill_BB_nans = False):
 
     df['made_or_lost'] = df['outcome_relative_to_start'].apply(lambda x: made_or_lost(x))
 
-    return df
+    df = prior_actions_for_stats(df)
+
+    return df 
 
 
 
@@ -203,3 +205,33 @@ def made_or_lost(x):
         return 1
     else:
         return 0 
+
+
+def prior_actions_for_stats(df):
+    '''
+    finds actions of player prior to the hand currently being played 
+    '''
+    mask = df['TournamentNumber'] != '' # ignores cash hands for time being, make this optional w/ argument? 
+    df = df[mask]
+    df['prior_actions'] = df.HandHistory.apply(lambda x: make_lst(x))
+    unique_TN = df['TournamentNumber'].unique()
+    for num in unique_TN: # iterates through all unique tournament numbers
+        mask = df['TournamentNumber'] == num
+        tourn_df = df[mask]
+        for idx, row in tourn_df.iterrows(): # go through each row of tournament 
+            row_dic = {}
+            mask = tourn_df.index < idx
+            df_prior = tourn_df[mask] # hands that occured previously in this tournament 
+            for player in row['player_names']: # looping through all players present in hand
+                player_actions = []
+                for dic in df_prior['action_type']: # looking at all prior hands 
+                    if player in dic:
+                        player_actions.append(dic[player])
+                row_dic[player] = player_actions
+            df.loc[idx, 'prior_actions'].append(row_dic)
+
+    return df
+
+
+def make_lst(x): # definitely a better way to do this but this is easy 
+    return []

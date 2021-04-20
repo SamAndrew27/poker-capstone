@@ -58,7 +58,8 @@ def fill_dependent_columns(df, fill_BB_nans = False):
 
     df['total_actions_witnessed_relevant_players'] = df.apply(lambda row: total_actions_witnessed_relevant_players(row), axis=1)
 
-    
+    df['weighted_relevant_vpip'] = df.apply(lambda row: weighted_relevant_vpip(row), axis=1)
+
     return df 
 
 
@@ -424,5 +425,25 @@ def total_actions_witnessed_relevant_players(row):
         total += len(prior_actions[player])  
     return total 
 
+def weighted_relevant_vpip(row):
+    vpip_lst = []
+    players_before = row['players_acting_before_me']
+    players_after = row['players_acting_after_me']
+    prior_actions = row['prior_actions']
+    vpip_dic = row['vpip_all_players']
+    for player in players_before:
+        if vpip_dic[player] != 'No Hands':
+            num_actions = len(prior_actions[player])
+            for num in range(num_actions):
+                vpip_lst.append(vpip_dic[player])
+    for player in players_after:
+        if vpip_dic[player] != 'No Hands':
+            num_actions = len(prior_actions[player])
+            for num in range(num_actions):
+                vpip_lst.append(vpip_dic[player])
+        
+    return np.mean(vpip_lst)
+    
 
-
+if __name__=="__main__":
+    pass 

@@ -50,23 +50,39 @@ def train_test(X, y, rand_state = 151, test_size = .2):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state = rand_state)
     return X_train, X_test, y_train, y_test
 
+
 # splits data for classification into training & holdout
-def holdout_training_classification(): 
-    df = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/df_for_classification.csv')
+def holdout_training_classification(df): 
     df = get_tournaments(df)
     df = put_in_money(df)
-    df = df.dropna(subset = ['outcome_relative_to_start','buyin', 
-                            'BB_in_stack', 'total_players', 'position',  
-                            'low_card', 'high_card', 'suited', 'pocket_pair', 'card_rank' ])
-    df = df[['buyin', 'BB_in_stack', 'total_players', 
-             'position', 'low_card', 'high_card', 
-             'suited', 'pocket_pair', 'card_rank', 
-             'hour', 'days_since_start', 'hand_frequency', 'made_or_lost']]
+    # perhaps extend this? 
+    # df = df.dropna(subset = ['buyin', 
+    #                         'BB_in_stack', 
+    #                         'total_players', 
+    #                         'position',  
+    #                         'low_card', 
+    #                         'high_card', 
+    #                         'suited', 
+    #                         'pocket_pair', 
+    #                         'card_rank' ])
+    df = df[['BB_in_stack', 
+             'position', 
+             'low_card', 
+             'high_card', 
+             'suited', 
+             'card_rank', 
+             'made_or_lost',
+             'limpers',
+             'raises&reraises',
+             'num_players_before',
+             'num_players_after']]
+
+    df = df.dropna()
 
     primary, holdout = train_test_split(df, test_size = .2)
 
-    primary.to_csv('train_classification_tournaments.csv')
-    holdout.to_csv('holdout_classification_tournaments.csv')
+    primary.to_csv('../../data/train_classification_tournaments.csv')
+    holdout.to_csv('../../data/holdout_classification_tournaments.csv')
     
 
 
@@ -77,7 +93,18 @@ if __name__ == "__main__":
     # print(train.info())
     # print(hold.info())
 
-    df = pd.read_csv('new_df.csv')
+    df = pd.read_csv('../../data/df_weighted_vpip.csv')
     df = put_in_money(df)
-    df = df.dropna(subset=['vpip_players_before', 'vpip_players_after'])
-    print(df.info())
+    holdout_training_classification(df)
+
+
+
+
+
+    # 'amount_to_call',
+    # 'average_table_vpip',
+    # 'total_actions_witnessed',
+    # 'vpip_relavant_players',
+
+    # 'total_actions_witnessed_relevant_players',
+    # 'weighted_relevant_vpip'

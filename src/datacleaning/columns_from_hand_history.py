@@ -33,9 +33,15 @@ def fill_HH_columns(df):
 
     df['player_names'] = df['HandHistory'].apply(lambda x: player_names(x)) # for use by other functions 
 
-    df['players_acting_before_me'] = df.HandHistory.apply(lambda x: players_before(x))
+    df['players_acting_before_me'] = df.HandHistory.apply(lambda x: players_before(x)) # does not include players who folded 
 
     df['players_acting_after_me'] = df.HandHistory.apply(lambda x: players_after(x)) # this might not account for cases where action was folded leading to some players never making an action. If we end up using data for hands where some players did not have to act we will have to develop a more robust function
+
+    df['limpers'] = df.HandHistory.apply(lambda x: limpers(x))
+
+    df['raises&reraises'] = df['HandHistory'].apply(lambda x: raises_and_reraises(x))
+
+    df['callers'] = df['HandHistory'].apply(lambda x: callers(x))
 
     return df
 
@@ -393,8 +399,8 @@ def players_after(x):
     stop = 0
     hero_found = False
     players_before = set() # set of players before
-    players_after = set()
-    for idx, elem in enumerate(x): # list of players after 
+    players_after = set() # set of players after 
+    for idx, elem in enumerate(x): 
         if 'Pocket' in elem:
             start = idx
     subset = x[start+1:] # subset containing preflop action until end
@@ -421,6 +427,124 @@ def players_after(x):
 
     return players_after
 
+def limpers(x):
+    count = 0
+    for idx, elem in enumerate(x): 
+        if 'Pocket' in elem:
+            start = idx
+    subset = x[start+1:] # subset containing preflop action until end
+    for idx, elem in enumerate(subset):
+        if '</round>' in elem:
+            stop = idx
+            break 
+    subset = subset[:stop] # subset containing just preflop action 
+    for elem in subset:
+        if 'Hero' in elem or ('type="3"' not in elem and 'type="0"' not in elem): # breaks if action arrives to me OR someone doesn't limp/fold
+            break 
+        else:
+            if 'type="3"' in elem:
+                count += 1
+    return count 
+
+def raises_and_reraises(x): # pretty sure this works but consider checking to make sure 
+    bet = 0
+    player_name = 0
+    player_amount_bet = {} # store amount bet to delineate shoves from calls (all shoves are shoves but some are raises and some are calls)       
+    for elem in x: # getting amount put in prior to betting
+        if '[cards]' in elem and ('type="1"' in elem or 'type="2"' in elem): # ignores antis  
+            for sub_string in elem.split():
+                if 'player' in sub_string:
+                    player_name = sub_string.replace('player="', '').replace('"', '') 
+                if 'sum' in sub_string:
+                    bet = float(sub_string.replace('sum="', '').replace('"', '')) 
+                player_amount_bet[player_name] = bet
+                            
+    for idx, elem in enumerate(x): 
+        if 'Pocket' in elem:
+            start = idx
+    subset = x[start+1:] # subset containing preflop action until end
+    for idx, elem in enumerate(subset):
+        if '</round>' in elem:
+            stop = idx
+            break 
+    subset = subset[:stop] # subset containing just preflop action   
+    
+    count = 0
+    for elem in subset:
+
+        if 'Hero' in elem:
+            break
+        else:
+            if 'type="23"' in elem or 'type="7"' in elem: # finds shoves & raises
+                for sub_string in elem.split(): # gets amount shoved/raised & players name
+                    if 'player' in sub_string:
+                        player_name = sub_string.replace('player="', '').replace('"', '') 
+                    if 'sum' in sub_string:
+                        bet = float(sub_string.replace('sum="', '').replace('"', ''))  
+                if bet > max(player_amount_bet.values()):
+                    count += 1
+                if player_name in player_amount_bet:
+                    player_amount_bet[player_name] += bet
+                else:
+                    player_amount_bet[player_name] = bet
+    return count 
+
+def callers(x): # pretty sure this works but consider checking to make sure 
+    bet = 0
+    player_name = 0
+    player_amount_bet = {} # store amount bet to delineate shoves from calls (all shoves are shoves but some are raises and some are calls)       
+    for elem in x: # getting amount put in prior to betting
+        if '[cards]' in elem and ('type="1"' in elem or 'type="2"' in elem): # ignores antis  
+            for sub_string in elem.split():
+                if 'player' in sub_string:
+                    player_name = sub_string.replace('player="', '').replace('"', '') 
+                if 'sum' in sub_string:
+                    bet = float(sub_string.replace('sum="', '').replace('"', '')) 
+                player_amount_bet[player_name] = bet
+                            
+    for idx, elem in enumerate(x): 
+        if 'Pocket' in elem:
+            start = idx
+    subset = x[start+1:] # subset containing preflop action until end
+    for idx, elem in enumerate(subset):
+        if '</round>' in elem:
+            stop = idx
+            break 
+    subset = subset[:stop] # subset containing just preflop action   
+    
+    raise_happened = False # trigger for when a raise occures 
+    count = 0
+    for elem in subset:
+
+        if 'Hero' in elem:
+            break
+
+        for sub_string in elem.split(): # gets amount shoved or raised & players name
+            if 'player' in sub_string:
+                player_name = sub_string.replace('player="', '').replace('"', '') 
+            if 'sum' in sub_string:
+                bet = float(sub_string.replace('sum="', '').replace('"', ''))            
+
+        if ('type="23"' in elem or 'type="7"' in elem) and raise_happened == False: # finds shoves & raises, trying to avoid edge cases here but probably some extraneous stuff
+
+            if 'type="7"' in elem:
+                if bet > max(player_amount_bet.values()):# checks to see if shove was a raise or call 
+                    raise_happened = True
+            else: # for raises
+                raise_happened = True
+
+                
+        if raise_happened:
+            if 'type="3"' in elem:
+                count += 1
+            if 'type="7"' in elem:
+                if bet <= max(player_amount_bet.values()):
+                    count += 1
+        if player_name not in player_amount_bet:
+            player_amount_bet[player_name] = bet
+        else:
+            player_amount_bet[player_name] += bet
+    return count 
 
 
 # almost certainly won't use this, application too difficult for scope of this week 

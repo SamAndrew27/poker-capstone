@@ -4,6 +4,7 @@ from sklearn.metrics import f1_score, confusion_matrix, accuracy_score, recall_s
 from class_prep import read_in_holdout_no_time, read_in_return_Xy_no_time
 import matplotlib.pyplot as plt 
 from sklearn.ensemble import GradientBoostingClassifier
+import pickle 
 
 grad_boost = GradientBoostingClassifier(learning_rate=.042, max_depth=2, max_features=2, min_samples_leaf=9, min_samples_split=6, n_estimators=37, subsample=.3)
 X, y = read_in_return_Xy_no_time()
@@ -63,7 +64,7 @@ def test_holdout_average(model, X, y, X_holdout, y_holdout, threshold, num_itera
         
 if __name__ == "__main__":
 
-    print(test_holdout_average(grad_boost, X, y, X_holdout, y_holdout, threshold = .58, num_iterations= 1000))
+    # print(test_holdout_average(grad_boost, X, y, X_holdout, y_holdout, threshold = .58, num_iterations= 1000))
     # print(X.info())
     # print(grad_boost.feature_importances_)
     # print(np.mean(y_holdout))
@@ -74,3 +75,9 @@ if __name__ == "__main__":
  
     # 1000 iterations:
     # (0.5318260613237492, 0.6887608697892491, 0.6247985039738196, 0.6923382696804365, 0.37520149602618047, 0.6079530133448912, 448.174, 407.826, 394.73, 888.27)
+
+    # grad_boost.fit(X,y)
+    
+    # pickle.dump(grad_boost, open('gradient_boost_cap2.pickle', 'wb'))
+
+    print(X.columns)

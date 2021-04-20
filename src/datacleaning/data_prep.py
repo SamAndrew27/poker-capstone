@@ -69,9 +69,15 @@ def holdout_training_classification():
     holdout.to_csv('holdout_classification_tournaments.csv')
     
 
+
+
 if __name__ == "__main__":
     # train = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/train_classification_tournaments.csv')
     # hold = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/holdout_classification_tournaments.csv')
     # print(train.info())
     # print(hold.info())
 
+    df = pd.read_csv('new_df.csv')
+    df = put_in_money(df)
+    df = df.dropna(subset=['vpip_players_before', 'vpip_players_after'])
+    print(df.info())

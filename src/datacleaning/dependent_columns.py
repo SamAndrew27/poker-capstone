@@ -40,13 +40,24 @@ def fill_dependent_columns(df, fill_BB_nans = False):
 
     df['vpip_players_before'] = df.apply(lambda row: vpip_players_before(row), axis=1)
 
-    df['num_players_before'] = df['players_acting_before_me'].apply(lambda x: len(x))
+    df['num_players_before'] = df['players_acting_before_me'].apply(lambda x: len(x)) # players before me currently in the pot
 
-    df['num_players_after'] = df['players_acting_after_me'].apply(lambda x: len(x))
+    df['num_players_after'] = df['players_acting_after_me'].apply(lambda x: len(x)) # players after me currently in the pot
 
-    df['num_actions_before_players'] = df.apply(lambda row: actions_witnessed_before(row), axis=1)
+    df['num_actions_before_players'] = df.apply(lambda row: actions_witnessed_before(row), axis=1) # number of actions VPIP is created upon
 
-    df['num_actions_after_players'] = df.apply(lambda row: actions_witnessed_after(row), axis=1)  
+    df['num_actions_after_players'] = df.apply(lambda row: actions_witnessed_after(row), axis=1)  # number of actions VPIP is created upon 
+
+    df['amount_to_call'] = df.apply(lambda row: amount_to_call(row), axis=1)
+
+    df['average_table_vpip'] = df['vpip_all_players'].apply(lambda x: average_table_vpip(x)) # does not include me 
+
+    df['total_actions_witnessed'] = df['prior_actions'].apply(lambda x: total_actions_witnessed(x))
+
+    df['vpip_relavant_players'] = df.apply(lambda row: vpip_relavant_players(row), axis=1)
+
+    df['total_actions_witnessed_relevant_players'] = df.apply(lambda row: total_actions_witnessed_relevant_players(row), axis=1)
+
     
     return df 
 
@@ -224,7 +235,7 @@ def made_or_lost(x):
         return 0 
 
 
-def prior_actions_for_stats(df):
+def prior_actions_for_stats(df): # right now we are deleting the cash game hands - I suppose that's not a problem but consider changing it 
     '''
     finds actions of player prior to the hand currently being played 
     '''
@@ -312,3 +323,106 @@ def actions_witnessed_after(row):
     for player in row['players_acting_after_me']:
         total += len(prior_actions[player])
     return total  
+
+
+
+
+
+def amount_to_call(row):
+    player_bets = {}
+    handhistory = row['HandHistory']
+    bb = row['BB']
+    bet = 0
+    player_name = 0
+    for name in row['player_names']: # setting up dictionary with keys of all player names
+        player_bets[name] = 0
+        
+    for elem in handhistory: # getting amount put in prior to betting
+        if '[cards]' in elem and ('type="1"' in elem or 'type="2"' in elem): # ignores antis  
+            for sub_string in elem.split():
+                if 'player' in sub_string:
+                    player_name = sub_string.replace('player="', '').replace('"', '') 
+                if 'sum' in sub_string:
+                    bet = float(sub_string.replace('sum="', '').replace('"', '')) 
+                    player_bets[player_name] += bet
+            
+    
+
+    for idx, elem in enumerate(handhistory): 
+        if 'Pocket' in elem:
+            start = idx
+    subset = handhistory[start+1:] # subset containing preflop action until end
+    for idx, elem in enumerate(subset):
+        if '</round>' in elem:
+            stop = idx
+            break 
+    subset = subset[:stop] # subset containing just preflop action 
+    
+    for elem in subset: # iterating through preflop action
+        if 'Hero' in elem: # ends iteration if action arrives at me
+            break 
+        if 'sum="0"' not in elem: # finds cases where bet was made 
+            for sub_string in elem.split():
+                if 'player' in sub_string:
+                    player_name = sub_string.replace('player="', '').replace('"', '') 
+                if 'sum' in sub_string:
+                    bet = float(sub_string.replace('sum="', '').replace('"', '')) 
+                    player_bets[player_name] += bet
+
+    
+    if max(player_bets.values()) < bb: # finds if BB was greater than amount bet 
+        result = bb # if so sets result = to BB, useful in cases where actual BB was smaller than the actual bet (shortstacks)
+    else:
+        result = max(player_bets.values())
+    result = result - player_bets.get('Hero', 0) # subtracts in case I am small blind or BB
+    result = result / bb # puts result in BB format
+    
+    return result 
+
+
+def average_table_vpip(x):
+    vpip_lst = []
+    for key, val in x.items():
+        if key == 'Hero' or val == 'No Hands':
+            continue
+        else:
+            vpip_lst.append(val)
+    return np.mean(vpip_lst)
+
+
+def total_actions_witnessed(x):
+    total = 0
+    for player, actions in x.items():
+        if player != 'Hero':
+            total += len(actions)
+    return total 
+
+
+
+def vpip_relavant_players(row):
+    vpip_lst = []
+    players_before = row['players_acting_before_me']
+    players_after = row['players_acting_after_me']
+    vpip_dic = row['vpip_all_players']
+    for player in players_before:
+        if vpip_dic[player] != 'No Hands':
+            vpip_lst.append(vpip_dic[player])
+    for player in players_after:
+        if vpip_dic[player] != 'No Hands':
+            vpip_lst.append(vpip_dic[player])
+        
+    return np.mean(vpip_lst)
+
+def total_actions_witnessed_relevant_players(row):
+    players_before = row['players_acting_before_me']
+    players_after = row['players_acting_after_me']
+    prior_actions = row['prior_actions']
+    total = 0
+    for player in players_before:
+        total += len(prior_actions[player])
+    for player in players_after:
+        total += len(prior_actions[player])  
+    return total 
+
+
+

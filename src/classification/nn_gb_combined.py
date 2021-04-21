@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import StratifiedKFold
 from tensorflow.keras.optimizers import Adam
 from sklearn.metrics import f1_score
-
+from sklearn.ensemble import GradientBoostingClassifier
 # load dataset
 X, y = read_in_return_Xy_scaled_no_unused()
 # encode class values as integers
@@ -21,19 +21,16 @@ X, y = read_in_return_Xy_scaled_no_unused()
 def create_baseline():
 	# create model
     model = Sequential()
-    model.add(Dropout(0.2, input_shape=(10,)))
+    # model.add(Dropout(0.1, input_shape=(10,)))
 
-    model.add(Dense(10, input_dim=10, activation='relu'))
-    model.add(Dense(20, activation='relu'))
-    model.add(Dense(100, activation='relu'))
-    model.add(Dropout(0.2, input_shape=(10,)))
-    model.add(Dense(20, activation='relu'))
+    model.add(Dense(11, input_dim=11, activation='relu'))
+    model.add(Dense(22, activation='relu'))
 
 
 
     model.add(Dense(1, activation='sigmoid'))
     # Compile model
-    opt = Adam(lr=.00001)
+    opt = Adam(lr=.001)
     model.compile(loss='binary_crossentropy', optimizer=opt, metrics=[f1_m, AUC(), Precision()])
     return model
 # evaluate model with standardized dataset
@@ -58,11 +55,25 @@ def f1_m(y_true, y_pred):
 def model_eval(X, y):
     skf = StratifiedKFold(n_splits=5, shuffle=True)
     cvscores = []
+    pre_predictions = pd.Series(index = X.index, dtype='float64') # Series to add the predictions from prelim models testing
     for train, test in skf.split(X, y):
+        X_train = X.iloc[train]
+        X_test = X.iloc[test]
+        y_train = y.iloc[train]
+        gb = GradientBoostingClassifier(learning_rate=.01, n_estimators=90, min_samples_leaf=6 , min_samples_split=4 ,max_features= 3,max_depth= 5,subsample= .6)
+        gb.fit(X_train, y_train)
+        pred = gb.predict_proba(X_test)[:,1]
+        pre_predictions.iloc[test] = pred 
+
+    X['prediction'] = pre_predictions 
+
+    for train, test in skf.split(X, y):
+
+
         model = create_baseline()
-        es = EarlyStopping(monitor='loss', mode='min', verbose=0, patience=10)
+        es = EarlyStopping(monitor='loss', mode='min', verbose=0, patience=5)
         # Fit the model
-        model.fit(X.iloc[train], y.iloc[train], verbose=0, epochs=5000, batch_size=30, callbacks=[es])
+        model.fit(X.iloc[train], y.iloc[train], verbose=0, epochs=500, batch_size=30, callbacks=[es])
         # evaluate the model
         scores = model.evaluate(X.iloc[test], y.iloc[test], verbose=1)
         print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))

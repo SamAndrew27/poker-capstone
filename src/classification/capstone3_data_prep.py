@@ -5,7 +5,7 @@ from sklearn.model_selection import GridSearchCV, train_test_split, KFold
 from sklearn.metrics import f1_score, confusion_matrix, accuracy_score, recall_score, precision_score
 
 def read_in_data():
-    df = pd.read_csv('/home/sam/Documents/DSI/capstone/poker/data/train_classification_tournaments.csv')
+    df = pd.read_csv('../../data/train_classification_tournaments.csv')
     df = df.drop(df.columns[0], axis = 1)
 
     return df
@@ -47,3 +47,7 @@ def read_in_return_Xy_scaled_no_unused():
     X = pd.DataFrame(data = SS.fit_transform(X), columns = list(X.columns))  
 
     return X, y 
+
+if __name__=="__main__":
+    X, y = read_in_return_Xy_no_unused()
+    print(X.info())

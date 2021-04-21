@@ -214,6 +214,10 @@ def test_XGB_gradient_ADA():
     result.loc[2] = [model_dic[2], np.mean(brier_ada), np.mean(roc_ada)] 
 
     return result 
+
+
+
+
 if __name__ == "__main__":
 
     result = test_XGB_gradient_ADA()

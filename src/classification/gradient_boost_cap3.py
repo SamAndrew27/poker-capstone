@@ -70,4 +70,5 @@ if __name__=="__main__":
     # print(np.mean(cross_val_score(gb_final, X, y, scoring='f1')))
     # gb_final.fit(X,y)
     # pickle.dump(gb_final, open('gradient_boost_cap3.pickle', 'wb'))
-    feature_importance(gb_final, X, y)
+    # feature_importance(gb_final, X, y)
+    print(X.info())

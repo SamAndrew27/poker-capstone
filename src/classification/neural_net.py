@@ -21,20 +21,20 @@ X, y = read_in_return_Xy_scaled_no_unused()
 def create_baseline():
 	# create model
     model = Sequential()
-    model.add(Dropout(0.2, input_shape=(10,)))
+    # model.add(Dropout(0.2, input_shape=(10,)))
 
-    model.add(Dense(10, input_dim=10, activation='relu'))
-    model.add(Dense(20, activation='relu'))
-    model.add(Dense(100, activation='relu'))
-    model.add(Dropout(0.2, input_shape=(10,)))
-    model.add(Dense(20, activation='relu'))
+    model.add(Dense(20, input_dim=10, activation='relu'))
+    # model.add(Dense(20, activation='relu'))
+    # model.add(Dense(100, activation='softmax'))
+    # model.add(Dropout(0.2, input_shape=(10,)))
+    model.add(Dense(10, activation='relu'))
 
 
 
     model.add(Dense(1, activation='sigmoid'))
     # Compile model
     opt = Adam(lr=.00001)
-    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=[f1_m, AUC(), Precision()])
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=[AUC(), Precision(),f1_m])
     return model
 # evaluate model with standardized dataset
 
@@ -60,9 +60,9 @@ def model_eval(X, y):
     cvscores = []
     for train, test in skf.split(X, y):
         model = create_baseline()
-        es = EarlyStopping(monitor='loss', mode='min', verbose=0, patience=10)
+        es = EarlyStopping(monitor='loss', mode='min', verbose=0, patience=50)
         # Fit the model
-        model.fit(X.iloc[train], y.iloc[train], verbose=0, epochs=5000, batch_size=30, callbacks=[es])
+        model.fit(X.iloc[train], y.iloc[train], verbose=0, epochs=100, batch_size=100, callbacks=[es])
         # evaluate the model
         scores = model.evaluate(X.iloc[test], y.iloc[test], verbose=1)
         print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
@@ -80,3 +80,22 @@ if __name__=="__main__":
 
     # soft max seems to work just as well as relu 
     # more small layers seems worse 
+    # def create_baseline():
+    # 	# create model
+    #     model = Sequential()
+    #     model.add(Dropout(0.2, input_shape=(10,)))
+
+    #     model.add(Dense(10, input_dim=10, activation='relu'))
+    #     model.add(Dense(20, activation='relu'))
+    #     model.add(Dense(100, activation='softmax'))
+    #     model.add(Dropout(0.2, input_shape=(10,)))
+    #     model.add(Dense(20, activation='relu'))
+
+    # epochs=5000, batch_size=30
+
+    #     model.add(Dense(1, activation='sigmoid'))
+    #     # Compile model
+    #     opt = Adam(lr=.00001)
+    #     model.compile(loss='binary_crossentropy', optimizer=opt, metrics=[AUC(), Precision()])
+    #     return model
+    # # evaluate model with standardized dataset

@@ -146,7 +146,7 @@ def confusion_ratios(X,y,model,threshold, iterations = 100): # specific ratios i
         npv_lst.append(npv)
         weight_lst.append(weighting)
 
-    average = {'thresh': thresh, 'precision': np.mean(pre_lst), 'npv': np.mean(npv_lst), 'weighting': np.mean(weight_lst)}
+    average = {'thresh': threshold, 'precision': np.mean(pre_lst), 'npv': np.mean(npv_lst), 'weighting': np.mean(weight_lst)}
 
 
     return average

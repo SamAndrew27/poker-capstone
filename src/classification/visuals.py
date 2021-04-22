@@ -22,15 +22,15 @@ def plot_card_rank(): # probably could use some cleanup
     fig, ax = plt.subplots()
     ax = sns.kdeplot(data=df, x='card_rank', hue='made_or_lost', fill=True)
     ax.legend(['won', 'lost'])
-    plt.show()
+    return ax 
 
 def plot_bb():
     _, _,df = load_whole()
     fig, ax = plt.subplots()
     ax = sns.kdeplot(data=df, x='BB_in_stack', hue='made_or_lost', fill=True)
-    ax.set(xlim=(-20,100))
+    ax.set(xlim=(0,100))
     ax.legend(['won','lost'])
-    plt.show()
+    return ax 
 
 def plot_num_players_under3():
     won, lost ,_ = load_whole()
@@ -50,7 +50,7 @@ def plot_num_players_under3():
 
     ax.set_ylabel('Number of Hands')
     ax.set_xlabel('Number of Players Who Entered Pot Before Me')
-    ax.set_title('Number of Hands Won or Lost by Number of Players to Enter Pot')
+    ax.set_title('Number of Hands Won or Lost \n by Number of Players to Enter Pot')
 
     return ax 
 
@@ -75,7 +75,7 @@ def plot_num_players_over3():
 
     ax.set_ylabel('Number of Hands')
     ax.set_xlabel('Number of Players Who Entered Pot Before Me')
-    ax.set_title('Number of Hands Won or Lost by Number of Players to Enter Pot')
+    ax.set_title('Number of Hands Won or Lost \n by Number of Players to Enter Pot')
 
     return ax 
 
@@ -95,7 +95,7 @@ def plot_raises():
     ax.set_xticklabels(labels)
 
     ax.set_ylabel('Number of Hands')
-    ax.set_title('Number of Hands Won or Lost by Whether Pot was Raise')
+    ax.set_title('Number of Hands Won or Lost \n by Whether Pot was Raise')
     return ax 
 
 
@@ -132,4 +132,5 @@ def plot_made_v_lost():
 if __name__=="__main__":
     
     ax = plot_made_v_lost()
+    ax1 = plot_raises()
     plt.show()

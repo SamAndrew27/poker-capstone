@@ -33,15 +33,15 @@ def predict():
 
         X = pd.DataFrame({'suited': [suited], 
                           'low_card': [low_card],
-                          'BB_in_stack': [float(request.form['BB_in_stack'])], 
-                          'raises&reraises': [float(request.form['raises&reraises'])], 
                           'position': [position], 
                           'high_card': [high_card], 
+                          'card_rank': [rank],
                           'limpers': [float(request.form['limpers'])], 
+                          'raises&reraises': [float(request.form['raises&reraises'])], 
                           'num_players_before': [float(request.form['num_players_before'])], 
-                          'num_players_after': [float(request.form['num_players_after'])], 
-                          'card_rank': [rank]
-                          })
+                          'num_players_after': [float(request.form['num_players_after'])],
+                          'BB_in_stack': [float(request.form['BB_in_stack'])]})
+
         prediction = model.predict(X)[0]
         if prediction == 1:
             result = 'Play That Hand!'

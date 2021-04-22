@@ -7,3 +7,7 @@
 *.db
 *.db-wal
 *.db-smh
+*.pyc
+
+.ipynb_checkpoints/
+__pycache__/

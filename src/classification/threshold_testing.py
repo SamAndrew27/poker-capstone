@@ -3,6 +3,11 @@ from capstone3_data_prep import read_in_return_Xy_no_unused, read_in_return_Xy_s
 import pandas as pd 
 import numpy as np 
 from class_prep import threshold_testing, confusion, confusion_ratios
+from sklearn.model_selection import KFold
+import matplotlib.pyplot as plt 
+plt.style.use('ggplot')
+import seaborn as sns 
+
 
 
 gb_final = GradientBoostingClassifier(learning_rate=.01, n_estimators=90, min_samples_leaf=6 , min_samples_split=4 ,max_features= 3,max_depth= 5,subsample= .6)
@@ -11,7 +16,34 @@ gb_final = GradientBoostingClassifier(learning_rate=.01, n_estimators=90, min_sa
 X, y = read_in_return_Xy_no_unused()
 
 
+def test_prediction_results(X, y, model, num_folds=5):
+    kf = KFold(n_splits=num_folds, shuffle=True)
+    results = pd.DataFrame(columns=['prediction', 'truth'], index=X.index)
+    for train, test in kf.split(X):
+        X_train = X.iloc[train]
+        X_test = X.iloc[test]
+        y_train = y.iloc[train]
+        y_test = y.iloc[test]    
 
+        model.fit(X_train, y_train)
+        y_prob = model.predict_proba(X_test)
+
+        results['prediction'].iloc[test] = y_prob[:, 1]
+        results['truth'].iloc[test] = y_test
+
+
+
+    return results
+
+def test_results(results, upperbound, lowerbound):
+    # results = results.mask((results['prediction'] <= upperbound) & (results['prediction'] >= lowerbound))
+    upper_mask = results['prediction'] <= upperbound
+    results = results[upper_mask]
+    lower_mask = results['prediction'] >= lowerbound
+    results = results[lower_mask]
+
+    result = np.sum(results['truth']) / len(results)
+    return result, len(results)
 
 
 if __name__=="__main__":
@@ -39,5 +71,14 @@ if __name__=="__main__":
     # 16   0.66  0.438114  0.534597  0.788436  0.303896
     # 17   0.67  0.365839  0.509467  0.807476   0.23677
     thresh = .59
-    print(confusion_ratios(X,y,gb_final, thresh, 10))
-    print(confusion(X,y,gb_final, thresh))
+    # print(confusion_ratios(X,y,gb_final, thresh, 10))
+    # print(confusion(X,y,gb_final, thresh))
+
+    results = test_prediction_results(X, y, gb_final) 
+    print(test_results(results, .55, .53))
+    # .65+ seems good for must play
+    # .55-.65 for maybe play? 
+    # .55- seems good for don't play 
+    # ax = sns.histplot(data=results, x='prediction', hue='truth')
+    # plt.show()
+    

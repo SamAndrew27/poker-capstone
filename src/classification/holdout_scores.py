@@ -57,16 +57,23 @@ def test_values(true, pred, middle=False):
             pred = pred.apply(lambda x: 0)
 
         tn, fp, fn, tp = confusion_matrix(true, pred).ravel()
-        precision = precision_score(true, pred)
         accuracy = accuracy_score(true, pred)
         f1 = f1_score(true, pred)
         recall = recall_score(true, pred)
-        npv =  tn/ (tn + fn)
+
+        if tp:
+            precision = precision_score(true, pred)
+        else:
+            precision=0
+        if tn:
+            npv =  tn/ (tn + fn)
+        else:
+            npv = 0
         results.iloc[num] = [precision,accuracy, recall, f1, npv, tp, fp, tn, fn]
 
     return results
 
-def run_multiple_test(lower_thresh=.55, upper_thresh=.65, iterations = 1000):
+def run_multiple_test(lower_thresh=.55, upper_thresh=.65, iterations = 1000, save=True, split_middle=False):
 
 
     lower_df = pd.DataFrame(columns=['precision', 'accuracy', 'recall', 'f1', 'npv', 'tp', 'fp', 'tn', 'fn' ], index=list(range(iterations)))
@@ -75,25 +82,58 @@ def run_multiple_test(lower_thresh=.55, upper_thresh=.65, iterations = 1000):
     top_df = pd.DataFrame(columns=['precision', 'accuracy', 'recall', 'f1', 'npv', 'tp', 'fp', 'tn', 'fn' ], index=list(range(iterations)))
 
     df_lst = [lower_df, middle_df, top_df]
-    
+    mid_idx = 0
     for idx in range(iterations):
-        top, middle, lower = predict_split_predictions()
+        top, middle, lower = predict_split_predictions(lower_thresh, upper_thresh)
         results = [lower, middle, top]
-        count = 0
+        result_count = 0
         for df, result in zip(df_lst,results):
-            if count == 1:
+            if result_count == 1:
                 middle = True
             else:
                 middle = False
             true, pred = split_columns(result) 
-            one_test = test_values(true,pred, middle=middle)
-            df.iloc[idx] = one_test.
-            count += 1
-    
-    return lower_df
 
+            one_test = test_values(true,pred, middle=middle)
+            if result_count == 1:
+                df.iloc[mid_idx] = one_test.iloc[0]
+                df.iloc[mid_idx + 1] = one_test.iloc[1]
+
+                mid_idx += 2
+
+            else:
+                df.iloc[idx] = one_test.iloc[0]
+            result_count +=1
+
+
+
+    if split_middle: 
+        middle_true_mask = middle_df.tn == 0
+        middle_true = middle_df[middle_true_mask]
+        middle_false_mask = middle_df.tp == 0
+        middle_false = middle_df[middle_false_mask]
+
+        if save:
+            lower_df.to_csv('../../data/lower_50.csv')
+            middle_false.to_csv('../../data/middle_false_50.csv')
+            middle_true.to_csv('../../data/middle_true_50.csv')
+            top_df.to_csv('../../data/top__50.csv')
+        else:
+
+            return lower_df, middle_true, middle_false, top_df
+    
+    else:
+        lower_df.to_csv('../../data/lower_50.csv')
+        middle_df.to_csv('../../data/middle_false_50.csv')
+        top_df.to_csv('../../data/top__50.csv')
             
-            
+        if save:
+            lower_df.to_csv('../../data/lower_50.csv')
+            middle.to_csv('../../data/middle_false_50.csv')
+            top_df.to_csv('../../data/top__50.csv')
+        else:
+
+            return lower_df, middle_df, top_df     
 
                 
             
@@ -102,7 +142,9 @@ def run_multiple_test(lower_thresh=.55, upper_thresh=.65, iterations = 1000):
 
 
 if __name__=="__main__":
-    run_multiple_test(iterations=10)
+    # lower_df, middle_df, top_df = run_multiple_test(lower_thresh=0.5, save=False, iterations=10)
+
+    top_thresh, middle_thresh, lower_thresh = predict_split_predictions(lower_thresh=.51, upper_thresh=.595)
 
     # top_thresh, middle_thresh, lower_thresh = predict_split_predictions()
     # _, X_hold, y_hold =     create_model_load_data()
@@ -113,9 +155,11 @@ if __name__=="__main__":
 
     # print(top_thresh.tail(10))
 
-    # print(len(top_thresh))
-    # print(len(middle_thresh))
-    # print(len(lower_thresh))
+    print(len(top_thresh))
+    print(len(middle_thresh))
+    print(len(lower_thresh))
+    # print(len(top_thresh) +len(middle_thresh) )
+    # print(top_df.describe())
     # print(len(y_hold))
     # print('checking values')
     # print(top_thresh['prediction_proba'].min())

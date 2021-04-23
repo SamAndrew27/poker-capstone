@@ -61,6 +61,7 @@ def plot_results():
     ax.set_title('Number of Hands Won or Lost \n in Each Grouping')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
+    ax.legend()
 
     plt.text(x= -.335, y = 90, s=f'{bottom_won}%', fontsize=12)
     plt.text(x= .02, y = 90, s=f'{bottom_lost}%', fontsize=12)

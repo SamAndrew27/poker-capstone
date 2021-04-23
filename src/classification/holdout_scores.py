@@ -73,7 +73,7 @@ def test_values(true, pred, middle=False):
 
     return results
 
-def run_multiple_test(lower_thresh=.55, upper_thresh=.65, iterations = 1000, save=True, split_middle=False):
+def run_multiple_test(lower_thresh=.51, upper_thresh=.65, iterations = 1000, save=True, split_middle=False):
 
 
     lower_df = pd.DataFrame(columns=['precision', 'accuracy', 'recall', 'f1', 'npv', 'tp', 'fp', 'tn', 'fn' ], index=list(range(iterations)))
@@ -136,15 +136,38 @@ def run_multiple_test(lower_thresh=.55, upper_thresh=.65, iterations = 1000, sav
             return lower_df, middle_df, top_df     
 
                 
-            
+
+# must play = .655 & up 
+# probably should play it = 0.595 - 0.655
+# maybe not? 0.51 - 0.595
+# Don't do it! 0.51 and down 
+
+def run_test_single_thresh(thresh=.55, iterations = 10, save=True):
+    result = pd.DataFrame(columns=['precision', 'accuracy', 'recall', 'f1', 'npv', 'tp', 'fp', 'tn', 'fn' ], index=list(range(iterations)))
+    for idx in range(iterations):
+        model, X_hold, y_hold = create_model_load_data()
+        pred = model.predict_proba(X_hold)[:,1]
+
+        predictions = pd.DataFrame(data={'prediction_proba':pred})
+        predictions['prediction'] = predictions['prediction_proba'].apply(lambda x: made__proba_predictions(x, thresh))
+
+        one_test = test_values(y_hold, predictions['prediction'])
+        result.iloc[idx] = one_test.iloc[0]
 
 
 
+    return np.mean(result)
 
 if __name__=="__main__":
-    # lower_df, middle_df, top_df = run_multiple_test(lower_thresh=0.5, save=False, iterations=10)
+    # lower_df, middle_df, top_df = run_multiple_test(lower_thresh=0.595, upper_thresh=0.655, save=False, iterations=10)
+    # lower_df, middle_true, middle_false, top_df = run_multiple_test(lower_thresh=0.51, upper_thresh=0.52, save=False, iterations=10, split_middle=True)
 
-    top_thresh, middle_thresh, lower_thresh = predict_split_predictions(lower_thresh=.51, upper_thresh=.595)
+    print(run_test_single_thresh(thresh=.51, iterations=50))
+
+    # print(np.mean(top_df))
+    # print(np.mean(middle_true))
+
+    # top_thresh, middle_thresh, lower_thresh = predict_split_predictions(lower_thresh=.51, upper_thresh=.595)
 
     # top_thresh, middle_thresh, lower_thresh = predict_split_predictions()
     # _, X_hold, y_hold =     create_model_load_data()
@@ -155,9 +178,9 @@ if __name__=="__main__":
 
     # print(top_thresh.tail(10))
 
-    print(len(top_thresh))
-    print(len(middle_thresh))
-    print(len(lower_thresh))
+    # print(len(top_thresh))
+    # print(len(middle_thresh))
+    # print(len(lower_thresh))
     # print(len(top_thresh) +len(middle_thresh) )
     # print(top_df.describe())
     # print(len(y_hold))
@@ -167,6 +190,169 @@ if __name__=="__main__":
     # print(middle_thresh['prediction_proba'].min())
     # print(lower_thresh['prediction_proba'].max())
 
+# should redo the ones that aren't specific df's and get scores for whole dataframe 
 
 
 
+    # range .595 to 0.655 alone predicted as positive
+    # precision      0.669145
+    # accuracy       0.669145
+    # recall         1.000000
+    # f1             0.801763
+    # npv            0.000000
+    # tp           425.700000
+    # fp           210.500000
+    # tn             0.000000
+    # fn             0.000000
+
+    # range .595 to 0.655 alone predicted as negative
+    # precision      0.000000
+    # accuracy       0.330865
+    # recall         0.000000
+    # f1             0.000000
+    # npv            0.330865
+    # tp             0.000000
+    # fp             0.000000
+    # tn           211.200000
+    # fn           427.400000
+    # dtype: float64
+
+
+
+    # range .51 to .595 alone predicted as positive
+    # precision      0.524221
+    # accuracy       0.524221
+    # recall         1.000000
+    # f1             0.687825
+    # npv            0.000000
+    # tp           337.200000
+    # fp           305.700000
+    # tn             0.000000
+    # fn             0.000000
+
+    # range .51 to .595 alone predicted as negative
+    # precision      0.000000
+    # accuracy       0.475779
+    # recall         0.000000
+    # f1             0.000000
+    # npv            0.475779
+    # tp             0.000000
+    # fp             0.000000
+    # tn           305.700000
+    # fn           337.200000
+
+
+    # .655+ as positive
+    # precision      0.766035
+    # accuracy       0.543600
+    # recall         0.340031
+    # f1             0.470943
+    # npv            0.463340
+    # tp           434.560000
+    # fp           132.800000
+    # tn           728.200000
+    # fn           843.440000
+    # dtype: float64
+
+    # .595 + as positive
+    # precision      0.714066
+    # accuracy       0.642777
+    # recall         0.670704
+    # f1             0.691627
+    # npv            0.551796
+    # tp           857.160000
+    # fp           343.260000
+    # tn           517.740000
+    # fn           420.840000
+
+    # .51+ as positive
+    # precision       0.647487
+    # accuracy        0.657943
+    # recall          0.938388
+    # f1              0.766256
+    # npv             0.725505
+    # tp           1199.260000
+    # fp            652.920000
+    # tn            208.080000
+    # fn             78.740000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # range .595 and up predicted as positive
+    # precision      0.713519
+    # accuracy       0.713519
+    # recall         1.000000
+    # f1             0.832808
+    # npv            0.000000
+    # tp           861.700000
+    # fp           346.000000
+    # tn             0.000000
+    # fn             0.000000
+    # dtype: float64
+
+
+
+
+
+# # Counting 0.51 as all positive 
+# precision       0.647646
+# accuracy        0.647646
+# recall          1.000000
+# f1              0.786146
+# npv             0.000000
+# tp           1199.500000
+# fp            652.600000
+# tn              0.000000
+# fn              0.000000
+
+
+    # for range over 0.655
+    # precision      0.767814
+    # accuracy       0.767814
+    # recall         1.000000
+    # f1             0.868642
+    # npv            0.000000
+    # tp           432.000000
+    # fp           130.700000
+    # tn             0.000000
+    # fn             0.000000

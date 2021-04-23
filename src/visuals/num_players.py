@@ -69,7 +69,7 @@ def plot_together():
     ax.legend()
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
-
+    ax.legend()
     ax.set_ylabel('Number of Hands')
     ax.set_xlabel('Number of Players')
     ax.set_title('Number of Hands Won or Lost \n by Number of Players to Enter Pot')

@@ -43,12 +43,14 @@ def predict():
                           'BB_in_stack': [float(request.form['BB_in_stack'])]})
 
         prediction = model.predict_proba(X)[0][1]
-        if prediction >= 0.65:
+        if prediction >= 0.655:
             result = 'Play That Hand!'
-        if prediction < 0.65 and prediction > 0.55:
-            result = 'Maybe Play It?'
-        if prediction <= 0.55:
-            result = "Don't Do It!"
+        if prediction < 0.655 and prediction > 0.595:
+            result = 'Probable Win'
+        if prediction <= 0.595 and prediction > 0.51:
+            result = "Probable Loss"
+        if prediction <= .51:
+            result = "Don't Play It!"
 
     page = f'''Predicted Outcome:
     <table>

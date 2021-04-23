@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 plt.style.use('ggplot')
 from load_df import won_lost_for_BB
+plt.rcParams.update({'font.size': 15})
 
 # def plot_bb():
 #     _, _,df = load_whole()
@@ -42,8 +43,8 @@ def bb_bar(rounded=5, cutoff=120):
     width = 0.35
     fig, ax = plt.subplots()
 
-    won_ax = ax.bar(x - width/2, won['BB_in_stack'].value_counts(), width=width, label='won')
-    lost_ax = ax.bar(x + width/2, lost['BB_in_stack'].value_counts(), width=width, label='lost')
+    won_ax = ax.bar(x - width/2, won['BB_in_stack'].value_counts().sort_index(), width=width, label='won')
+    lost_ax = ax.bar(x + width/2, lost['BB_in_stack'].value_counts().sort_index(), width=width, label='lost')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.set_ylabel('Number of Hands')

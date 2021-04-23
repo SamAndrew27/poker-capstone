@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from load_df import load_whole, won_lost_for_num_players
 plt.style.use('ggplot')
+plt.rcParams.update({'font.size': 15})
 
 
 
@@ -70,7 +71,7 @@ def plot_together():
     ax.set_xticklabels(labels)
 
     ax.set_ylabel('Number of Hands')
-    ax.set_xlabel('Number of Players Who Entered Pot Before Me')
+    ax.set_xlabel('Number of Players')
     ax.set_title('Number of Hands Won or Lost \n by Number of Players to Enter Pot')
 
     return ax 
@@ -78,5 +79,8 @@ def plot_together():
 if __name__=="__main__":
     # ax1 = plot_num_players_under3()
     # ax2 = plot_num_players_over3()
+    won, lost, _ = won_lost_for_num_players()
+    print(won['num_players_before'].value_counts())
+    print(won['num_players_before'].value_counts())
     ax3 = plot_together()
     plt.show()

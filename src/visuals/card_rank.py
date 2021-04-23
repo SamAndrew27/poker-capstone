@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 plt.style.use('ggplot')
+plt.rcParams.update({'font.size': 15})
 
 
 # def plot_card_rank(): # probably could use some cleanup 
@@ -14,12 +15,12 @@ plt.style.use('ggplot')
 #     return ax 
 
 # keep playing with this one, run it by DSR/instructor
-def plot_card_rank_sns(): # consider changing to offset (rather than stacked barchart)
+def plot_card_rank_sns(setup='stack'): # consider changing to offset (rather than stacked barchart)
     won, lost, df = load_whole()
     fig, ax = plt.subplots()
     # cmap = sns.cm.rocket_r
     df['Outcome'] = df['made_or_lost'].apply(lambda x: give_names(x))
-    ax = sns.histplot(data=df, x='card_rank', hue='Outcome', multiple='stack', bins=12, element='step', hue_order=['Made Money', 'Lost Money'])
+    ax = sns.histplot(data=df, x='card_rank', hue='Outcome', bins=12, element='step', hue_order=['Made Money', 'Lost Money'])
     ax.set_xlabel('Card Rank')
     
     # ax.legend()
@@ -34,8 +35,8 @@ def card_rank_bar():
     x = np.arange(len(labels))
     width = 0.35
     fig, ax = plt.subplots()
-    won_ax = ax.bar(x - width/2, won['card_rank'].value_counts(), width=width, label='won')
-    lost_ax = ax.bar(x + width/2, lost['card_rank'].value_counts(), width=width, label='lost')
+    won_ax = ax.bar(x - width/2, won['card_rank'].value_counts().sort_index(), width=width, label='won')
+    lost_ax = ax.bar(x + width/2, lost['card_rank'].value_counts().sort_index(), width=width, label='lost')
 
     return ax
 
@@ -56,9 +57,11 @@ def give_names(x):
 if __name__ == "__main__":
 
     ax1 = plot_card_rank_sns()
+    ax2 = plot_card_rank_sns(setup='dodge')
+
     # ax2 = card_rank_bar()
     # ax3 = card_rank_violin()
-    
+
 
 
 

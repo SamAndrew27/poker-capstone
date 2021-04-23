@@ -42,18 +42,18 @@ def predict():
                           'num_players_after': [float(request.form['num_players_after'])],
                           'BB_in_stack': [float(request.form['BB_in_stack'])]})
 
-        prediction = model.predict(X)[0]
-        if prediction == 1:
+        prediction = model.predict_proba(X)[0][1]
+        if prediction >= 0.65:
             result = 'Play That Hand!'
-        else:
-            result = 'Skip This One!'
+        if prediction < 0.65 and prediction > 0.55:
+            result = 'Maybe Play It?'
+        if prediction <= 0.55:
+            result = "Don't Do It!"
 
-        prob = model.predict_proba(X)[0][1]
     page = f'''Predicted Outcome:
     <table>
-        <tr><td>prediction</td><td>{result}</td></tr>
-        <tr><td>prediction probability</td><td>{prob}</td></tr>
-        <tr><td>rank</td><td>{rank}</td></tr>
+                                                    <tr><td>prediction</td><td>{result}</td></tr>
+
 
     <table>'''
 

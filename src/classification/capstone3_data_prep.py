@@ -10,6 +10,21 @@ def read_in_data():
 
     return df
 
+def read_in_holdout_return_X_y():
+    df = pd.read_csv('../../data/holdout_classification_tournaments.csv')
+    df = df.drop(df.columns[0], axis = 1)
+    y = df['made_or_lost']
+    X =  df[['suited',
+            'low_card',
+            'position',
+            'high_card',
+            'card_rank',
+            'limpers', 
+            'raises&reraises',
+            'num_players_before',
+            'num_players_after',
+            'BB_in_stack']]
+    return X, y 
 
 def read_in_return_Xy_no_unused():
     X = read_in_data()

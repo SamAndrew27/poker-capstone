@@ -39,11 +39,11 @@ def test_results(results, upperbound, lowerbound):
     # results = results.mask((results['prediction'] <= upperbound) & (results['prediction'] >= lowerbound))
     upper_mask = results['prediction'] <= upperbound
     results = results[upper_mask]
-    lower_mask = results['prediction'] >= lowerbound
+    lower_mask = results['prediction'] > lowerbound
     results = results[lower_mask]
 
     result = np.sum(results['truth']) / len(results)
-    return result, len(results)
+    return result
 
 
 if __name__=="__main__":
@@ -74,8 +74,11 @@ if __name__=="__main__":
     # print(confusion_ratios(X,y,gb_final, thresh, 10))
     # print(confusion(X,y,gb_final, thresh))
 
-    results = test_prediction_results(X, y, gb_final) 
-    print(test_results(results, .55, .53))
+    # results = test_prediction_results(X, y, gb_final) 
+    # print(test_results(results, .55, .53))
+    print(X.info())
+
+    
     # .65+ seems good for must play
     # .55-.65 for maybe play? 
     # .55- seems good for don't play 

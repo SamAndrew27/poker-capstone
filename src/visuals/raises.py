@@ -6,6 +6,7 @@ from load_df import load_whole
 plt.style.use('ggplot')
 
 
+plt.rcParams.update({'font.size': 15})
 
 def plot_raises():
     won, lost, __ = load_whole()
@@ -14,7 +15,7 @@ def plot_raises():
 
     fig, ax = plt.subplots()
     width = 0.35
-    labels = ['Raised','Unraised']
+    labels = ['Unraised', 'Raised']
     x = np.arange(len(labels))
     won_ax = ax.bar(x=x - width/2, height= won['raises&reraises'].value_counts(), width=width, label='won')
     lost_ax = ax.bar(x=x + width/2, height= lost['raises&reraises'].value_counts(), width=width, label='lost')
@@ -39,4 +40,11 @@ def change_raise(x):
 
 if __name__ == "__main__":
     ax = plot_raises()
+
+    won, lost, __ = load_whole()
+    won['raises&reraises'] = won['raises&reraises'].apply(lambda x: change_raise(x))
+    lost['raises&reraises'] = lost['raises&reraises'].apply(lambda x: change_raise(x))
+    print(won['raises&reraises'].value_counts())
+    print(lost['raises&reraises'].value_counts())
+
     plt.show()

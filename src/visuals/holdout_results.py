@@ -5,6 +5,7 @@ import pandas as pd
 from load_df import load_whole, read_in_holdout_return_X_y, read_in_return_Xy_no_unused
 from sklearn.ensemble import GradientBoostingClassifier
 plt.style.use('ggplot')
+plt.rcParams.update({'font.size': 15})
 
 def get_results():
     X, y = read_in_return_Xy_no_unused()

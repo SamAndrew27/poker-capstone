@@ -3,11 +3,20 @@ import pandas as pd
 
 
 def fill_betting_columns(df):
-    df['flop_bet'] = df.apply(lambda x: flop_bet(x), axis = 1)
+    """Takes in dataframe and creates new columns with functions below
 
-    df['turn_bet'] = df.apply(lambda x: turn_bet(x), axis = 1)
+    Args:
+        df: pandas DataFrame
 
-    df['river_bet'] = df.apply(lambda x: river_bet(x), axis = 1)
+    Returns:
+        pandas dataframe: same as input with additional columns
+    """    
+    
+    df['flop_bet'] = df.apply(lambda row: flop_bet(row), axis = 1)
+
+    df['turn_bet'] = df.apply(lambda row: turn_bet(row), axis = 1)
+
+    df['river_bet'] = df.apply(lambda row: river_bet(row), axis = 1)
 
     df['preflop_bet'] = df['bet'] - (df['flop_bet'] + df['turn_bet'] + df['river_bet'] + df['my_blind_anti_total'])
 
@@ -25,9 +34,20 @@ def fill_betting_columns(df):
 
 
 ##############################################
-def flop_bet(x): # takes in HandHistory and money_beyond_blind
-    hh = x['HandHistory']
-    mbb = x['money_beyond_blind']
+def flop_bet(row): # takes in HandHistory and money_beyond_blind
+    
+    """finds value of flop bet if I made one
+    consider looking at how I did similar functions in other files this and similar functions more robust
+    
+    Args:
+        row of dataframe, extract HandHistory data and money_beyond_blind data: 
+
+    Returns:
+        float: amount I bet 
+    """    
+
+    hh = row['HandHistory']
+    mbb = row['money_beyond_blind']
     result = 0
     subset = []
     action_lst = []
@@ -57,9 +77,18 @@ def flop_bet(x): # takes in HandHistory and money_beyond_blind
     return result 
                    
 
-def turn_bet(x): # takes in HandHistory and money_beyond_blind
-    hh = x['HandHistory']
-    mbb = x['money_beyond_blind']
+def turn_bet(row): # takes in HandHistory and money_beyond_blind
+    """finds value of turn bet if I made one
+
+    Args:
+        row of dataframe, 2 values used, HandHistory & 'money_beyond_blind'
+
+    Returns:
+        float: amount bet
+    """    
+
+    hh = row['HandHistory']
+    mbb = row['money_beyond_blind']
     result = 0
     subset = []
     action_lst = [] # list of actions I made in the round of betting
@@ -90,9 +119,18 @@ def turn_bet(x): # takes in HandHistory and money_beyond_blind
     return result
 
 
-def river_bet(x): # takes in HandHistory and money_beyond_blind
-    hh = x['HandHistory']
-    mbb = x['money_beyond_blind']
+def river_bet(row): # takes in HandHistory and money_beyond_blind
+    """finds value of river bet if I made one
+
+    Args:
+        row of dataframe, 2 values used, HandHistory & 'money_beyond_blind'
+
+    Returns:
+        float: amount bet
+    """    
+
+    hh = row['HandHistory']
+    mbb = row['money_beyond_blind']
     result = 0
     subset = []
     action_lst = []
@@ -117,9 +155,18 @@ def river_bet(x): # takes in HandHistory and money_beyond_blind
     return result 
 
 def high_card(x):
+    """finds value of highest card
+
+    Args:
+        x = cards: list of my 2 cards
+
+    Returns:
+        int: value of highest card (2 for 2, 14 for Ace)
+    """    
+    
     result = None
     if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:
+        if len(x[0]) == 2 and len(x[1]) == 2:# checking that I have cards
             c1 = x[0]
             c2 = x[1]
             c1_rank = c1[1]
@@ -136,9 +183,17 @@ def high_card(x):
     return result
 
 def low_card(x):
+    """finds value of lowest card
+
+    Args:
+        x = cards: list of my 2 cards
+
+    Returns:
+        int: value of highest card (2 for 2, 14 for Ace)
+    """    
     result = None
     if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:
+        if len(x[0]) == 2 and len(x[1]) == 2:# checking that I have cards
             c1 = x[0]
             c2 = x[1]
             c1_rank = c1[1]
@@ -155,9 +210,17 @@ def low_card(x):
     return result  
 
 def suited(x):
+    """finds whether my 2 cards are suited
+
+    Args:
+        x = cards: list of my 2 cards
+
+    Returns:
+        int: 0 for unsuited, 1 for suited
+    """    
     result = 0
     if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:
+        if len(x[0]) == 2 and len(x[1]) == 2:# checking that I have cards
             c1 = x[0]
             c2 = x[1]
             c1_suit = c1[0]
@@ -167,9 +230,17 @@ def suited(x):
     return result 
 
 def pocket_pair(x):
+    """finds whether my 2 cards are a pocket pair
+
+    Args:
+        x = cards: list of my 2 cards
+
+    Returns:
+        int: 0 for non-pocket pair, 1 for pocket pair 
+    """    
     result = 0
     if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:
+        if len(x[0]) == 2 and len(x[1]) == 2:# checking that I have cards
             c1 = x[0]
             c2 = x[1]
             c1_rank = c1[1]
@@ -180,9 +251,17 @@ def pocket_pair(x):
 
 
 def gap(x):
+    """finds the value gap between my 2 cards
+
+    Args:
+        x = cards: list of my 2 cards
+
+    Returns:
+        int: distance between 2 cards (e.g. Ace and Queen would return 2)
+    """    
     result = None
     if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:
+        if len(x[0]) == 2 and len(x[1]) == 2: # checking that I have cards
             c1 = x[0]
             c2 = x[1]
             c1_rank = c1[1]

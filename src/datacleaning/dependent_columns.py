@@ -18,7 +18,7 @@ def fill_dependent_columns(df, fill_BB_nans = False):
         df = fix_BB_nans(df) # consider removing? # way I did this causes a warning 
     
   
-    df['BB_in_stack'] = df.apply(lambda x: BB_in_stack(x['starting_stack'], x['BB']), axis = 1)
+    df['BB_in_stack'] = df.apply(lambda row: BB_in_stack(row), axis = 1)
    
     df['net_outcome'] = df['won'] - df['bet']     
    
@@ -180,7 +180,9 @@ def BB(x):
     return result 
 
 
-def BB_in_stack(stack, BB):
+def BB_in_stack(row):
+    stack = row['starting_stack']
+    BB = row['BB']
     result = None
     if pd.isna(BB) == False and pd.isna(stack) == False:
         result = stack / BB

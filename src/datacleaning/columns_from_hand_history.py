@@ -10,7 +10,7 @@ def fill_HH_columns(df):
 
     #df['the_deck'] = df['HandHistory'].apply(lambda row: possible_cards(row)) # retiring this function, could probably be removed entirely 
 
-    df['my_cards'] = df['HandHistory'].apply(lambda row: hole_cards(row)) # my cards 
+    df['my_cards'] = df['HandHistory'].apply(lambda x: hole_cards(x)) # my cards 
     
     df['starting_stack'] = df['HandHistory'].apply(lambda row: start_stack(row))
     
@@ -29,15 +29,15 @@ def fill_HH_columns(df):
     # pretty sure this requires edits for edge case, refer to function below
     df['bets_before_my_preflop_action'] = df.HandHistory.apply(lambda x: bets_before_my_preflop_action(x))
 
-    df['action_type'] = df.HandHistory.apply(lambda x: action_type(x))
+    df['action_type'] = df['HandHistory'].apply(lambda x: action_type(x))
 
     df['player_names'] = df['HandHistory'].apply(lambda x: player_names(x)) # for use by other functions 
 
-    df['players_acting_before_me'] = df.HandHistory.apply(lambda x: players_before(x)) # does not include players who folded 
+    df['players_acting_before_me'] = df['HandHistory'].apply(lambda x: players_before(x)) # does not include players who folded 
 
-    df['players_acting_after_me'] = df.HandHistory.apply(lambda x: players_after(x)) # this might not account for cases where action was folded leading to some players never making an action. If we end up using data for hands where some players did not have to act we will have to develop a more robust function
+    df['players_acting_after_me'] = df['HandHistory'].apply(lambda x: players_after(x)) # this might not account for cases where action was folded leading to some players never making an action. If we end up using data for hands where some players did not have to act we will have to develop a more robust function
 
-    df['limpers'] = df.HandHistory.apply(lambda x: limpers(x))
+    df['limpers'] = df['HandHistory'].apply(lambda x: limpers(x))
 
     df['raises&reraises'] = df['HandHistory'].apply(lambda x: raises_and_reraises(x))
 
@@ -52,6 +52,14 @@ def fill_HH_columns(df):
 # functions that do these processes 
 
 def buyin(x): 
+    """gets buy-in of the tournament, fairly certain cash games still have some sort of value here? 
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        float: buy-in of tournament
+    """    
     for elem in x:
         if 'totalbuyin' in elem:
             temp = elem 
@@ -61,6 +69,14 @@ def buyin(x):
 
 
 def gametype(x):
+    """gets gametype of tournament
+
+    Args:
+        handhistory: list string data of hand
+
+    Returns:
+        string: type of game
+    """    
     temp = None
     for elem in x:
         if 'gametype' in elem:
@@ -72,6 +88,15 @@ def gametype(x):
 
 
 def hole_cards(x):
+    """finds the cards I hold, saves the 2 values in their present form to a list
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        list: 2 cards I held, Suit:Face Value format
+    """    
+
     c1 = ''
     c2 = ''
     for elem in x:
@@ -92,9 +117,15 @@ def hole_cards(x):
 
 
 def start_stack(x): 
-    '''
-    finds amount of chips hero has at start of hand
-    '''
+    """Finds amount of chips I started hand with
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        float: number of chips
+    """    
+
     result = None
     temp = ''
     for elem in x:
@@ -112,14 +143,19 @@ def start_stack(x):
 
 # probably not going to be used, but may be useful so leaving for now
 def tournament_type(x):
-    '''
-    find the type of tournament/game type 
-    '''
+    """gets type of tournament 
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        string: tournament type
+    """
     result = ''
     cut = 0
     counter = 0
     for elem in x:
-        if '<tournamentname>' in elem:
+        if '<tournamentname>' in elem: # doing some string wrangling below to get just the name of the tournament
             temp = elem
             cut = temp.count('(') 
             temp = temp.replace('<tournamentname>', '')
@@ -140,9 +176,15 @@ def tournament_type(x):
     return result 
 
 def won(x):
-    '''
-    amount I won in the hand 
-    '''
+    """How much I won in the hand
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        float: amount won
+    """
+
     won = ''
     temp = ''
     result = 0
@@ -161,9 +203,15 @@ def won(x):
 
 
 def bet(x):
-    '''
-    total amount that I bet 
-    '''
+    """finds amount I bet in the hand 
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        float: amount bet
+    """
+
     bet = ''
     temp = ''
     result = None
@@ -180,9 +228,15 @@ def bet(x):
     return result 
 
 def total_players(x):
-    '''
-    number of players in the hand 
-    '''
+    """finds number of total players at table
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        int: total number of players (2-9 should be possible values)
+    """
+
     count = 0
     for elem in x:
         if 'Pocket' in elem:
@@ -191,12 +245,16 @@ def total_players(x):
 
 
 def position(x):
-    '''
-    finds what seat I was sitting in
-    1st position (generally small blind) is considered a 1
-    last postion (generally dealer seat) = the total number of players at the table
-    these values are returned as fractions, so 1/x, in the case of last position x/x 
-    '''
+    """Finds where I was seated 
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        float: My position where 1 is the earliest seat and the total number of players would be equal to the last seat
+        (e.g. if there are three players, and I am sitting in the earliest position, return = 1/3 or 0.33)
+    """
+
     pos_lst = []
     dealer_pos = 0
     dealer_exists = False
@@ -269,6 +327,14 @@ def position(x):
 
     
 def table_max(x):
+    """max number of seats at the table, always greater or equal to number of players at table
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        int: max players
+    """
     result = None
     for elem in x:
         if 'maxplayers' in elem:
@@ -279,6 +345,14 @@ def table_max(x):
 
 
 def my_blind_anti_total(x):
+    """Finds how much I put in in blinds/anti
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        float: amount blinded or antied 
+    """
     action_list = []
     result = 0
     for elem in x:
@@ -293,10 +367,15 @@ def my_blind_anti_total(x):
 
 
 def bets_before_my_preflop_action(x):
-    '''
-    finds bets before my bet
-    does not include blinds, but should it???
-    '''
+    """Finds amount bet prior to my preflop action
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        float: amount opponents bet before my action
+    """
+    
     start = 0
     stop = 0
     total=0
@@ -322,9 +401,16 @@ def bets_before_my_preflop_action(x):
         
 
 def action_type(x):
-    '''
-    finds all action types a player made preflop 
-    '''
+    """types of actions a player made preflop 
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        dictionary: dictionary with the actions all players took according to types as determined by DriveHud
+    """    
+
+
     result = {}
     start = 0
     stop = 0
@@ -355,6 +441,14 @@ def action_type(x):
 
 
 def player_names(x):
+    """gets names of all the players in hand
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        list: all of the players in hand as string values
+    """    
     player = None
     result = []
     for elem in x:
@@ -368,6 +462,14 @@ def player_names(x):
 
 
 def players_before(x):
+    """ finds all players having entered hand before my action
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        list: string values of all players having entered hand before my first action
+    """    
     start = 0
     stop = 0
     players_before = [] # list of players before
@@ -395,6 +497,14 @@ def players_before(x):
     return players_before
 
 def players_after(x):
+    """finds players acting after me in hand
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        set: all the players acting after me 
+    """    
     start = 0
     stop = 0
     hero_found = False
@@ -428,6 +538,14 @@ def players_after(x):
     return players_after
 
 def limpers(x):
+    """counts number of limpers
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        int: number of players having limped
+    """    
     count = 0
     for idx, elem in enumerate(x): 
         if 'Pocket' in elem:
@@ -447,6 +565,14 @@ def limpers(x):
     return count 
 
 def raises_and_reraises(x): # pretty sure this works but consider checking to make sure 
+    """returns 1 if there was a raise, and 1 + n for ever n reraise after
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        int: number of raises and reraises that occured prior to my first action 
+    """    
     bet = 0
     player_name = 0
     player_amount_bet = {} # store amount bet to delineate shoves from calls (all shoves are shoves but some are raises and some are calls)       
@@ -490,6 +616,14 @@ def raises_and_reraises(x): # pretty sure this works but consider checking to ma
     return count 
 
 def callers(x): # pretty sure this works but consider checking to make sure 
+    """number of players to have made a call PROBABLY COULD USE ADDITIONAL CLEANUP
+
+    Args:
+        handhistory: string data of hands
+
+    Returns:
+        int: number of callers, only non-0 when there has been a raise and a subsuquent call 
+    """
     bet = 0
     player_name = 0
     player_amount_bet = {} # store amount bet to delineate shoves from calls (all shoves are shoves but some are raises and some are calls)       

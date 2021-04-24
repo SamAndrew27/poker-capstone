@@ -1,7 +1,7 @@
 from sklearn.ensemble import GradientBoostingClassifier
 import pandas as pd
-from capstone3_data_prep import read_in_return_Xy_no_unused, read_in_return_Xy_scaled_no_unused
-from class_prep import grid_search
+from data_prep import read_in_return_Xy_no_unused, read_in_return_Xy_scaled_no_unused
+from grid_and_thresh_funcs import grid_search
 from sklearn.model_selection import cross_val_score
 import numpy as np
 import pickle 

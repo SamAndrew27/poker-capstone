@@ -1,4 +1,4 @@
-from capstone3_data_prep import read_in_return_Xy_scaled_no_unused
+from data_prep import read_in_return_Xy_scaled_no_unused
 import pandas as pd 
 import numpy as np 
 from tensorflow.keras.models import Sequential

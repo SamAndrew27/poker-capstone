@@ -60,6 +60,8 @@ def fill_dependent_columns(df, fill_BB_nans = False):
 
     df['weighted_relevant_vpip'] = df.apply(lambda row: weighted_relevant_vpip(row), axis=1)
 
+    df['limps&calls'] = df['limpers'] + df['callers']
+
     return df 
 
 

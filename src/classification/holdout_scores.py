@@ -1,7 +1,6 @@
 from sklearn.ensemble import GradientBoostingClassifier
 import pandas as pd
-from capstone3_data_prep import read_in_return_Xy_no_unused, read_in_holdout_return_X_y
-from class_prep import grid_search
+from data_prep import read_in_return_Xy_no_unused, read_in_holdout_return_X_y
 from sklearn.model_selection import cross_val_score
 import numpy as np
 from sklearn.metrics import f1_score, confusion_matrix, accuracy_score, recall_score, precision_score

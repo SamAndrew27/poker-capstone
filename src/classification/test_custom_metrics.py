@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import StratifiedKFold
-from capstone3_data_prep import read_in_return_Xy_scaled_no_unused
+from data_prep import read_in_return_Xy_scaled_no_unused
 
 def model_eval(model, X, y):
     skf = StratifiedKFold(n_splits=5, shuffle=True)

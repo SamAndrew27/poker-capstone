@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 plt.style.use('ggplot')
-plt.rcParams.update({'font.size': 15})
+plt.rcParams.update({'font.size': 20})
 
 
 # def plot_card_rank(): # probably could use some cleanup 
@@ -17,10 +17,10 @@ plt.rcParams.update({'font.size': 15})
 # keep playing with this one, run it by DSR/instructor
 def plot_card_rank_sns(setup='stack'): # consider changing to offset (rather than stacked barchart)
     won, lost, df = load_whole()
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(20,20))
     # cmap = sns.cm.rocket_r
     df['Outcome'] = df['made_or_lost'].apply(lambda x: give_names(x))
-    ax = sns.histplot(data=df, x='card_rank', hue='Outcome', bins=12, element='step', hue_order=['Made Money', 'Lost Money'])
+    ax = sns.histplot(data=df, x='card_rank', hue='Outcome', bins=20, element='step', hue_order=['Made Money/Broke Even', 'Lost Money'])
     ax.set_xlabel('Card Rank')
     
     # ax.legend()
@@ -52,12 +52,12 @@ def give_names(x):
     if x == 0:
         return 'Lost Money'
     else:
-        return 'Made Money'
+        return 'Made Money/Broke Even'
 
 if __name__ == "__main__":
 
     ax1 = plot_card_rank_sns()
-    ax2 = plot_card_rank_sns(setup='dodge')
+    # ax2 = plot_card_rank_sns(setup='dodge')
 
     # ax2 = card_rank_bar()
     # ax3 = card_rank_violin()

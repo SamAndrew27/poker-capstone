@@ -3,7 +3,7 @@ import numpy as np
 
 def fill_dependent_columns(df, fill_BB_nans = False):
 
-    df['blinds'] = df.apply(lambda x: blinds(x), axis =1)
+    df['blinds'] = df.apply(lambda row: blinds(row), axis =1)
  
     df['made_money'] = df['won'] > df['bet']
   
@@ -22,11 +22,11 @@ def fill_dependent_columns(df, fill_BB_nans = False):
    
     df['net_outcome'] = df['won'] - df['bet']     
    
-    df['all_in'] = df.apply(lambda x: all_in(x['starting_stack'], x['bet']), axis = 1)
+    df['all_in'] = df.apply(lambda row: all_in(row), axis = 1)
     
-    df['money_beyond_blind'] = df.apply(lambda x: money_beyond_blind(x), axis = 1) # whether i put in money in addition to OG blind
+    df['money_beyond_blind'] = df.apply(lambda row: money_beyond_blind(row), axis = 1) # whether i put in money in addition to OG blind
   
-    df['outcome_relative_to_start'] = (df['starting_stack'] + df['net_outcome']) / df['starting_stack']  
+    df['outcome_relative_to_start'] = (df['starting_stack'] + df['net_outcome']) / df['starting_stack']  # amount I started with +/- how much I won or lost divided by starting stack
 
     df['made_or_lost'] = df['outcome_relative_to_start'].apply(lambda x: made_or_lost(x))
 
@@ -67,9 +67,17 @@ def fill_dependent_columns(df, fill_BB_nans = False):
 
 
 
-def blinds(x): # hand history & gametype 
-    gt = x['cash_or_tourn']
-    hh = x['HandHistory']
+def blinds(row): # hand history & gametype 
+    """Finds blinds from hand
+
+    Args:
+        row from dataframe, looks at HandHistory/cash_or_tourn
+
+    Returns:
+        list: blinds from hand
+    """    
+    gt = row['cash_or_tourn']
+    hh = row['HandHistory']
     if gt == 'Holdem NL':
         blind_list = []
         result = []
@@ -94,6 +102,15 @@ def blinds(x): # hand history & gametype
 
 
 def fix_made_money(x):
+    """turns made_money from bool into 1/0 bool
+
+    Args:
+        x: made_money
+
+    Returns:
+        int: 1 = situations where I made money, 0 = situations where I lost money
+    """    
+
     result = 0
     if x == True:
         result = 1
@@ -103,6 +120,14 @@ def fix_made_money(x):
 
 
 def cards_numeric(x):
+    """using Bill Chen's formula I am assigning a numeric value to my hole cards
+
+    Args:
+        x (list): my cards
+
+    Returns:
+        int: card's rank 
+    """    
     result = 0
     if isinstance(x, list):
         if len(x[0]) == 2 and len(x[1]) == 2:
@@ -160,6 +185,14 @@ def cards_numeric(x):
  
 
 def BB(x): 
+    """Tries to find what BB was
+
+    Args:
+        blinds: list of blinds
+
+    Returns:
+        float: BB, if one was able to be found
+    """    
     result = None 
     blinds = x.copy()
     if len(blinds) == 2:
@@ -181,6 +214,14 @@ def BB(x):
 
 
 def BB_in_stack(row):
+    """divides stack by the Big Blind
+
+    Args:
+        row : used to get starting_stack / BB
+
+    Returns:
+        float: number of BB in my stack
+    """    
     stack = row['starting_stack']
     BB = row['BB']
     result = None
@@ -190,7 +231,17 @@ def BB_in_stack(row):
     return result
 
 
-def all_in(stack, bet):
+def all_in(row):
+    """Finds whether I went all in or not
+
+    Args:
+        row: used to get starting stack/amount I bet
+
+    Returns:
+        int: 1 for all in, 0 for not all in 
+    """    
+    stack = row['starting_stack']
+    bet = row['bet']
     result = None
     if stack == bet:
         result = int(1)
@@ -201,9 +252,17 @@ def all_in(stack, bet):
     return result
 
 
-def money_beyond_blind(x):
-    my_blind = x['my_blind_anti_total']
-    my_bet = x['bet']
+def money_beyond_blind(row):
+    """Finds whether I put in money beyond what I blinded
+
+    Args:
+        row: row used to get bet and my_blind_anti_total
+
+    Returns:
+        int: 1 if I put in money beyond blind, 0 if I did not
+    """    
+    my_blind = row['my_blind_anti_total']
+    my_bet = row['bet']
     result = 0
  
     if my_bet > my_blind:
@@ -212,6 +271,14 @@ def money_beyond_blind(x):
 
 # this is currently excluding cash game nulls, probably could just divide by .05, although it's not really important for cash games
 def fix_BB_nans(input_df):
+    """attempts to fill BB columns that have nulls
+
+    Args:
+        input_df (DataFrame): Dataframe we are checking for nulls
+
+    Returns:
+        DataFrame: with nulls filled if possible 
+    """    
     df = input_df.copy()
     for idx, row in df.iterrows():
         if pd.isnull(row['BB']):
@@ -234,6 +301,14 @@ def fix_BB_nans(input_df):
 # positive class is making $
 # this may be redundant, but rather than checking the validity of those columns made a while ago lets do this
 def made_or_lost(x):
+    """Finds whether I made or lost money
+
+    Args:
+        outcome_relative_to_start: column which says how much I won or lost relative to starting stack
+
+    Returns:
+        int: 1 for made money/broke even, 0 for cases where I lost money
+    """    
     if x >= 1:
         return 1
     else:
@@ -241,6 +316,14 @@ def made_or_lost(x):
 
 
 def prior_actions_for_stats(df): # right now we are deleting the cash game hands - I suppose that's not a problem but consider changing it 
+    """For each hand creates list of actions players made previously. INADVERTEDLY DELETING CASH HANDS HERE
+
+    Args:
+        df : DataFrame
+
+    Returns:
+        DataFrame: Dataframe, containing column w/ all the past actions of the players in the hand. 
+    """    
     '''
     finds actions of player prior to the hand currently being played 
     '''
@@ -274,6 +357,14 @@ def unlist(x):
         return elem 
 
 def make_vpip(x):
+    """finds vpip for all players using prior stats and returns it
+
+    Args:
+        prior_actions: dictionary containing prior actions of all players
+
+    Returns:
+        dictionary: contains actions of all prior actions for every player in hand
+    """    
     result = {}
     if x != {}:
         for player, actions in x.items(): # iterate through player dictionaries
@@ -288,6 +379,11 @@ def make_vpip(x):
     return result 
                 
 def vpip_players_after(row):
+    """Gets average vpip for all players yet to act
+
+    Returns:
+        float: average VPIP for all subsuquent players
+    """    
     vpips = []
     vpip_dic = row['vpip_all_players'] # dictonary of vpips of each player
     players_after = row['players_acting_after_me']
@@ -302,6 +398,11 @@ def vpip_players_after(row):
         return np.mean(vpips)
 
 def vpip_players_before(row):
+    """gets VPIP of all players yet to act
+
+    Returns:
+        float: VPIP of all subsuquent players
+    """    
     vpips = []
     vpip_dic = row['vpip_all_players'] # dictonary of vpips of each player
     players_before = row['players_acting_before_me'] # list of players acting before
@@ -316,6 +417,11 @@ def vpip_players_before(row):
         return np.mean(vpips)
 
 def actions_witnessed_before(row):
+    """counts number of actions used to created VPIP of players before
+
+    Returns:
+        int: number of actions used to create before players vpip stats
+    """    
     prior_actions = row['prior_actions']
     total = 0
     for player in row['players_acting_before_me']:
@@ -323,6 +429,11 @@ def actions_witnessed_before(row):
     return total 
 
 def actions_witnessed_after(row):
+    """counts number of actions used to created VPIP of players after
+
+    Returns:
+        int: number of actions used to create players after vpip stats
+    """  
     prior_actions = row['prior_actions']
     total = 0
     for player in row['players_acting_after_me']:
@@ -334,6 +445,12 @@ def actions_witnessed_after(row):
 
 
 def amount_to_call(row):
+    """finds how much it would cost me to stay in the hand
+
+
+    Returns:
+        float: bet size I am facing to stay in the hand
+    """    
     player_bets = {}
     handhistory = row['HandHistory']
     bb = row['BB']
@@ -386,6 +503,11 @@ def amount_to_call(row):
 
 
 def average_table_vpip(x):
+    """calculates the average VPIP of the table
+
+    Returns:
+        float: average VPIP of players at the table
+    """    
     vpip_lst = []
     for key, val in x.items():
         if key == 'Hero' or val == 'No Hands':
@@ -396,6 +518,11 @@ def average_table_vpip(x):
 
 
 def total_actions_witnessed(x):
+    """number of actions used to caclulate table VPIP
+
+    Returns:
+        int: count of actions used to calculate average table vpip
+    """    
     total = 0
     for player, actions in x.items():
         if player != 'Hero':
@@ -405,6 +532,11 @@ def total_actions_witnessed(x):
 
 
 def vpip_relavant_players(row):
+    """vpip of all players who have entered the hand or are yet to act
+
+    Returns:
+        float: average vpip of relevant players
+    """    
     vpip_lst = []
     players_before = row['players_acting_before_me']
     players_after = row['players_acting_after_me']
@@ -419,6 +551,11 @@ def vpip_relavant_players(row):
     return np.mean(vpip_lst)
 
 def total_actions_witnessed_relevant_players(row):
+    """number of actions used to calculate relevant player stats
+
+    Returns:
+        int: total number of relevant player actions
+    """    
     players_before = row['players_acting_before_me']
     players_after = row['players_acting_after_me']
     prior_actions = row['prior_actions']
@@ -430,6 +567,12 @@ def total_actions_witnessed_relevant_players(row):
     return total 
 
 def weighted_relevant_vpip(row):
+    """VPIP with scores weighted according to how many actions were used to calculate them 
+    (same as relevant player stuff but w/ weighting)
+
+    Returns:
+        float: average vpips of relevant players, weighted according to # of actions used in their creation
+    """    
     vpip_lst = []
     players_before = row['players_acting_before_me']
     players_after = row['players_acting_after_me']

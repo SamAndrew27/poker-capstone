@@ -5,7 +5,7 @@ import pandas as pd
 from load_df import load_whole, read_in_holdout_return_X_y, read_in_return_Xy_no_unused
 from sklearn.ensemble import GradientBoostingClassifier
 plt.style.use('ggplot')
-plt.rcParams.update({'font.size': 15})
+plt.rcParams.update({'font.size': 20})
 
 def get_results():
     X, y = read_in_return_Xy_no_unused()
@@ -24,13 +24,25 @@ def get_results():
 
     return won, lost
 
+# def bin_predictions(x):
+#     if x >= .655:
+#         return 'Play It!'
+#     if x < .65 and x > .595:
+#         return 'Probably Win'
+#     if x <= .595 and x > .51:
+#         return 'Caution Zone'
+#     if x <= .51:
+#         return "Don't Do It!"
+
 def bin_predictions(x):
-    if x >= .65:
-        return 'Play It!'
-    if x < .65 and x > .55:
-        return 'Maybe?'
-    if x <= .55:
-        return "Don't Do It!"
+    if x >= .655:
+        return 0
+    if x < .65 and x > .595:
+        return 1
+    if x <= .595 and x > .51:
+        return 2
+    if x <= .51:
+        return 3
 
 def plot_results():
     won, lost = get_results()
@@ -39,38 +51,45 @@ def plot_results():
 
     won_percent = won / (won+lost)
     lost_percent = lost / (won+lost)
-    bottom_won = round(100 * won_percent["Don't Do It!"], 1)
-    bottom_lost = round(100 * lost_percent["Don't Do It!"], 1)
-    middle_won = round(100 * won_percent["Maybe?"], 1)
-    middle_lost = round(100 * lost_percent["Maybe?"], 1)
-    top_won = round(100 * won_percent['Play It!'], 1)
-    top_lost = round(100 * lost_percent['Play It!'], 1)
 
-    labels = ["Don't Do It!", 'Consider Playing', 'Play It!']
+    q3_won = round(100 * won_percent[3], 1)
+    q3_lost = round(100 * lost_percent[3], 1)  
+    q2_won = round(100 * won_percent[2], 1)
+    q2_lost = round(100 * lost_percent[2], 1)
+    q1_won = round(100 * won_percent[1], 1)
+    q1_lost = round(100 * lost_percent[1], 1)
+    q0_won = round(100 * won_percent[0], 1)
+    q0_lost = round(100 * lost_percent[0], 1)
+
+    labels = ['Play It!', 'Probable Win', "Caution Zone", "Don't Do It!", ]
 
 
 
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(20,20))
 
     width = 0.35
     x = np.arange(len(labels))
-    won_ax = ax.bar(x=x - width/2, height= won, width=width, label="Won")
-    lost_ax = ax.bar(x=x + width/2, height= lost, width=width, label="lost")
+    won_ax = ax.bar(x=x - width/2, height= won, width=width, label="Won/Broke Even")
+    lost_ax = ax.bar(x=x + width/2, height= lost, width=width, label="Lost")
     ax.set_ylabel('Number of Hands')
     ax.set_title('Number of Hands Won or Lost \n in Each Grouping')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.legend()
 
-    plt.text(x= -.335, y = 90, s=f'{bottom_won}%', fontsize=12)
-    plt.text(x= .02, y = 90, s=f'{bottom_lost}%', fontsize=12)
+    plt.text(x= .06, y = 40, s=f'{q0_lost}%', fontsize=20)
+    plt.text(x= -.3, y = 40, s=f'{q0_won}%', fontsize=20)
 
-    plt.text(x= .68, y = 90, s=f'{middle_won}%', fontsize=12)
-    plt.text(x= 1.03, y = 90, s=f'{middle_lost}%', fontsize=12)
+    plt.text(x= 1.05, y = 40, s=f'{q1_lost}%', fontsize=20)
+    plt.text(x= .7, y = 40, s=f'{q1_won}%', fontsize=20)
 
-    plt.text(x= 1.67, y = 90, s=f'{top_won}%', fontsize=12)
-    plt.text(x= 2.02, y = 90, s=f'{top_lost}%', fontsize=12)
+    plt.text(x= 2.05, y = 40, s=f'{q2_lost}%', fontsize=20)
+    plt.text(x= 1.7, y = 40, s=f'{q2_won}%', fontsize=20)
+
+    plt.text(x= 3.05, y = 40, s=f'{q3_lost}%', fontsize=20)
+    plt.text(x= 2.7, y = 40, s=f'{q3_won}%', fontsize=20)
+
     return ax 
 
 

@@ -41,10 +41,10 @@ def bb_bar(rounded=5, cutoff=120):
 
     x = np.arange(len(labels))
     width = 0.35
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(20,20))
 
-    won_ax = ax.bar(x - width/2, won['BB_in_stack'].value_counts().sort_index(), width=width, label='won')
-    lost_ax = ax.bar(x + width/2, lost['BB_in_stack'].value_counts().sort_index(), width=width, label='lost')
+    won_ax = ax.bar(x - width/2, won['BB_in_stack'].value_counts().sort_index(), width=width, label='Won/Broke Even')
+    lost_ax = ax.bar(x + width/2, lost['BB_in_stack'].value_counts().sort_index(), width=width, label='Lost')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.set_ylabel('Number of Hands')

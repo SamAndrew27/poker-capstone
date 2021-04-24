@@ -52,9 +52,9 @@ def predict():
         if prediction <= .51:
             result = "Don't Play It!"
 
-    page = f'''Predicted Outcome:
+    page = f'''
     <table>
-                                                    <tr><td>prediction</td><td>{result}</td></tr>
+                                                    <tr><td>Predicted Outcome:</td><td>{result}</td></tr>
 
 
     <table>'''

@@ -13,6 +13,7 @@ from sklearn.linear_model import RidgeClassifier, LogisticRegression
 from sklearn.model_selection import KFold
 from sklearn.metrics import brier_score_loss, roc_auc_score
 
+xgb = XGBClassifier()
 
 def column_combinations(base_list, considered_columns, r=[1]): # all possible combinations of columns (that we are considering)
     """Creates a list of lists. list contain combinations of column names
@@ -98,7 +99,7 @@ def cv(model, X, y):
 
 
 
-def test_different_models_sans_XGB_Ridge_scale_within(base_list, considered_columns):
+def test_different_models_sans_XGB_Ridge_scale_within(base_list, considered_columns, r=[1]):
     """tests feature combinations w/ sklearn cv to get brier/roc scores
 
     Args:
@@ -114,7 +115,7 @@ def test_different_models_sans_XGB_Ridge_scale_within(base_list, considered_colu
 
     result = pd.DataFrame(columns=['model', 'columns', 'brier', 'roc_auc']) 
 
-    col_lst = column_combinations(base_list, considered_columns)
+    col_lst = column_combinations(base_list, considered_columns, r)
     model_dic = {0:'RandomForest' , 1: 'GradientBoost', 2: 'AdaBoost', 3:'KNN', 4: 'logistic'}
     model_lst = [RandomForestClassifier(), GradientBoostingClassifier(), AdaBoostClassifier(), KNeighborsClassifier(), LogisticRegression()]
     count = 0
@@ -139,9 +140,9 @@ def test_different_models_sans_XGB_Ridge_scale_within(base_list, considered_colu
 
 if __name__ == "__main__":
 
-    result = test_different_models_sans_XGB_Ridge_scale_within(base_list=['suited','low_card','position','high_card','card_rank', 'raises&reraises','num_players_before', 'num_players_after','BB_in_stack'], considered_columns = ['limpers', 'callers', 'limps&calls'])
+    result = test_different_models_sans_XGB_Ridge_scale_within(base_list=['BB_in_stack', 'suited','position','raises&reraises','num_players_before', 'num_players_after','card_rank'], considered_columns = ['limpers', 'low_card','high_card'], r=[1,2,3])
 
-    result.to_csv('../../data/classification_compare_card_features_limpers&callers.csv')
+    # result.to_csv('../../data/classification_compare_limpers_low_high_card.csv')
 
     # X, y = read_in_return_Xy_all_columns()
     # result = column_combinations(base_list=['suited','low_card','position','high_card','card_rank', 'raises&reraises','num_players_before', 'num_players_after','BB_in_stack'], considered_columns = ['limpers', 'callers', 'limps&calls'])

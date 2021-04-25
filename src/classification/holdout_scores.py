@@ -161,7 +161,7 @@ if __name__=="__main__":
     # lower_df, middle_df, top_df = run_multiple_test(lower_thresh=0.595, upper_thresh=0.655, save=False, iterations=10)
     # lower_df, middle_true, middle_false, top_df = run_multiple_test(lower_thresh=0.51, upper_thresh=0.52, save=False, iterations=10, split_middle=True)
 
-    print(run_test_single_thresh(thresh=.51, iterations=50))
+    print(run_test_single_thresh(thresh=.50, iterations=50))
 
     # print(np.mean(top_df))
     # print(np.mean(middle_true))
@@ -214,7 +214,6 @@ if __name__=="__main__":
     # fp             0.000000
     # tn           211.200000
     # fn           427.400000
-    # dtype: float64
 
 
 
@@ -263,6 +262,11 @@ if __name__=="__main__":
     # fp           343.260000
     # tn           517.740000
     # fn           420.840000
+
+
+
+
+
 
     # .51+ as positive
     # precision       0.647487

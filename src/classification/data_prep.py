@@ -42,10 +42,10 @@ def read_in_return_Xy_scaled_no_unused():
 
     Returns:
         X, y: Features, Target
-
+    """    
     X = read_in_data()
     y = X['made_or_lost']
-    """    
+
     X =  X[['suited',
             'low_card',
             'position',

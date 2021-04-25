@@ -5,7 +5,7 @@ from flask import Flask, render_template, request
 import pickle
 import numpy as np 
 import pandas as pd 
-from app_funcs import construct_cards
+from app_funcs import construct_cards, suited_to_int
 app = Flask(__name__)
 
 # home page
@@ -21,13 +21,14 @@ def predict():
 
         position = int(request.form['position_num']) / int(request.form['num_players'])
         BB_in_stack = float(request.form['stack']) / float(request.form['BB']) 
+        suited = suited_to_int(request.form['suited'])
+
 
         first_val = request.form['first_card_value']
-        first_suit = request.form['first_card_suit']
         second_val = request.form['second_card_value']
-        second_suit = request.form['second_card_value_suit']
+
         
-        rank, suited, low_card, high_card = construct_cards(first_val, second_val, first_suit, second_suit)
+        rank, low_card, high_card = construct_cards(first_val, second_val, suited=suited)
         
         
 
@@ -36,10 +37,10 @@ def predict():
                           'position': [position], 
                           'high_card': [high_card], 
                           'card_rank': [rank],
-                          'limpers': [float(request.form['limpers'])], 
-                          'raises&reraises': [float(request.form['raises&reraises'])], 
-                          'num_players_before': [float(request.form['num_players_before'])], 
-                          'num_players_after': [float(request.form['num_players_after'])],
+                          'limpers': [int(request.form['limpers'])], 
+                          'raises&reraises': [int(request.form['raises&reraises'])], 
+                          'num_players_before': [int(request.form['num_players_before'])], 
+                          'num_players_after': [int(request.form['num_players_after'])],
                           'BB_in_stack': [BB_in_stack]})
 
         prediction = model.predict_proba(X)[0][1]

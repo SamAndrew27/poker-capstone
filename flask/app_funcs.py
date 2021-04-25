@@ -2,6 +2,20 @@ import numpy as np
 import pandas as pd 
 
 
+def suited_to_int(s):
+    """returns 1 if suited and 0 if unsuited
+
+    Args:
+        s (string): yes or no, input by user
+
+    Returns:
+        int: 1 if suited (True), 0 if unsuited (False)
+    """    
+    s = s[0].upper()
+    if s == 'Y':
+        return 1
+    else:
+        return 0 
 
 def fix_val(val): # puts val in correct form
     if len(val) > 1:
@@ -10,26 +24,27 @@ def fix_val(val): # puts val in correct form
         val = val.upper()
     return val 
 
-def fix_suit(suit): # puts suit in correct form
-    return suit[0].upper()
+# def fix_suit(suit): # puts suit in correct form
+#     return suit[0].upper()
 
-def construct_cards(val1, val2, suit1, suit2):
+def construct_cards(val1, val2, suited=0):
     val1 = fix_val(val1)
     val2 = fix_val(val2)
-    suit1 = fix_suit(suit1)
-    suit2 = fix_suit(suit2)
-    card1 = f'{suit1}{val1}'
-    card2 = f'{suit2}{val2}'
+    if suited:
+        card1 = f'X{val1}'
+        card2 = f'X{val2}'
+    else:
+        card1 = f'X{val1}'
+        card2 = f'Y{val2}'
     cards =  [card1, card2]
-    rank, suited, lc, hc = return_card_vals(cards)
-    return rank, suited, lc, hc
+    rank, lc, hc = return_card_vals(cards)
+    return rank, lc, hc
 
 def return_card_vals(cards):
     hc = highest_card(cards)
     lc = lowest_card(cards)
-    suited = is_suited(cards)
     rank = cards_numeric(cards)
-    return rank, suited, lc, hc
+    return rank, lc, hc
 
 
 def cards_numeric(x):

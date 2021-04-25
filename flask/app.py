@@ -16,23 +16,28 @@ def index():
 
 @app.route('/prediction', methods=['POST'] )
 def predict():
+    """makes prediction using user input data 
+
+    Returns:
+        html page: shows variables used to make prediction & prediction 
+    """    
     with open('gradient_boost_cap3.pickle', 'rb') as f:
         model = pickle.load(f)
 
-        position = int(request.form['position_num']) / int(request.form['num_players'])
-        BB_in_stack = float(request.form['stack']) / float(request.form['BB']) 
-        suited = suited_to_int(request.form['suited'])
+        position = int(request.form['position_num']) / int(request.form['num_players']) # use position_num divided by total players to get 'position' variable
+        BB_in_stack = float(request.form['stack']) / float(request.form['BB'])  # use stack divided by BB to get BB_in_stack
+        suited = suited_to_int(request.form['suited']) # converts input 'yes/no' to 1/0
 
 
         first_val = request.form['first_card_value']
         second_val = request.form['second_card_value']
 
         
-        rank, low_card, high_card = construct_cards(first_val, second_val, suited=suited)
+        rank, low_card, high_card = construct_cards(first_val, second_val, suited=suited) # uses card values and suited to get rank, low card, highcard
         
         
 
-        X = pd.DataFrame({'suited': [suited], 
+        X = pd.DataFrame({'suited': [suited], # putting variables into dataframe
                           'low_card': [low_card],
                           'position': [position], 
                           'high_card': [high_card], 
@@ -43,7 +48,7 @@ def predict():
                           'num_players_after': [int(request.form['num_players_after'])],
                           'BB_in_stack': [BB_in_stack]})
 
-        prediction = model.predict_proba(X)[0][1]
+        prediction = model.predict_proba(X)[0][1] # get prediction, below we are assigning result based on prediction proba
         if prediction >= 0.655:
             result = 'Play That Hand!'
         if prediction < 0.655 and prediction > 0.595:
@@ -57,7 +62,7 @@ def predict():
 
     page = f'''
     <table>
-        <tr><td>Predicted Outcome:</td><td>{result}</td></tr>
+        <tr><td>Predicted Outcome:</td><td>{result}</td></tr> 
 
         <tr><td>Input Data:</td><td></td></tr>
         <tr><td>High Card:</td><td>{X['high_card'].iloc[0]}</td></tr>

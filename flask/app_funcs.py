@@ -18,6 +18,14 @@ def suited_to_int(s):
         return 0 
 
 def fix_val(val): # puts val in correct form
+    """using input val assigns to same form as cards were stored in OG data
+
+    Args:
+        val (string): string with user input card value
+
+    Returns:
+        string: first letter of input card value (10 = 1, 5=5, Ace = A, ect.) uppercased 
+    """    
     if len(val) > 1:
         val = val[0]
     if val.isnumeric() == False:
@@ -28,9 +36,20 @@ def fix_val(val): # puts val in correct form
 #     return suit[0].upper()
 
 def construct_cards(val1, val2, suited=0):
+    """takes in 2 user input cards, calls fix_val to put them in correct form, looks at suited to assign suitedness, and puts them in a list. 
+    then calls return_card_vals to get rank, lowcard, highcard
+
+    Args:
+        val1 (string): first card
+        val2 (string): second card
+        suited (int, optional): whether the card was suited or not. 1 for suited 0 for unsuited Defaults to 0.
+
+    Returns:
+        [type]: [description]
+    """    
     val1 = fix_val(val1)
     val2 = fix_val(val2)
-    if suited:
+    if suited: # gives card identical value for suit, if suited ==False different values for suit
         card1 = f'X{val1}'
         card2 = f'X{val2}'
     else:
@@ -41,13 +60,31 @@ def construct_cards(val1, val2, suited=0):
     return rank, lc, hc
 
 def return_card_vals(cards):
+    """using cards created in 'construct_cards' get highcard, lowcard, card_rank
+
+    Args:
+        cards (list): list of 2 card values
+
+    Returns:
+        rank (float): card_rank, value between -1.5 & 20
+        lc (int): lowest card
+        hc (int): highest card
+    """    
     hc = highest_card(cards)
     lc = lowest_card(cards)
     rank = cards_numeric(cards)
     return rank, lc, hc
 
 
-def cards_numeric(x):
+def cards_numeric(cards):
+    """Takes in cards and spits out card_rank
+
+    Args:
+        cards (list): list of my hole cards
+
+    Returns:
+        float: card_rank, as dicated by the Chen Formula (sans rounding)
+    """    
     result = 0
     if isinstance(x, list):
         if len(x[0]) == 2 and len(x[1]) == 2:
@@ -103,7 +140,15 @@ def cards_numeric(x):
                     
     return result # I elected not to round up as the formula dictates, not sure what benefit it would have in this scenario
  
-def highest_card(x):
+def highest_card(cards):
+    """Finds value of highest card
+
+    Args:
+        cards (list): list of my 2 cards
+
+    Returns:
+        int: value of card, 2 being lowest and 14 (Ace) being highest
+    """    
     result = None
     if isinstance(x, list):
         if len(x[0]) == 2 and len(x[1]) == 2:
@@ -122,7 +167,15 @@ def highest_card(x):
             result = int(max(numeric_card_lst))
     return result
 
-def lowest_card(x):
+def lowest_card(cards):
+    """find lowest card
+
+    Args:
+        cards (list): list of my 2 cards
+
+    Returns:
+        int: value of card, 2 being lowest and 14 (Ace) being highest
+    """    
     result = None
     if isinstance(x, list):
         if len(x[0]) == 2 and len(x[1]) == 2:
@@ -141,14 +194,3 @@ def lowest_card(x):
             result = int(min(numeric_card_lst))
     return result  
 
-def is_suited(x):
-    result = 0
-    if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:
-            c1 = x[0]
-            c2 = x[1]
-            c1_suit = c1[0]
-            c2_suit = c2[0]
-            if c2_suit == c1_suit:
-                result = 1
-    return result 

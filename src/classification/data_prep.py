@@ -5,12 +5,22 @@ from sklearn.model_selection import GridSearchCV, train_test_split, KFold
 from sklearn.metrics import f1_score, confusion_matrix, accuracy_score, recall_score, precision_score
 
 def read_in_data():
+    """retreives data
+
+    Returns:
+        DataFrame: returns pandas dataframe from csv
+    """    
     df = pd.read_csv('../../data/train_classification_tournaments.csv')
     df = df.drop(df.columns[0], axis = 1)
 
     return df
 
 def read_in_return_Xy_no_unused():
+    """splits in data and returns it split into X & y, features we are using
+
+    Returns:
+        X, y: Features, Target
+    """    
     X = read_in_data()
     y = X['made_or_lost']
 
@@ -28,9 +38,14 @@ def read_in_return_Xy_no_unused():
     return X, y 
 
 def read_in_return_Xy_scaled_no_unused():
+    """splits in data and returns it split into X & y, features we are using & target. scales using SS
+
+    Returns:
+        X, y: Features, Target
+
     X = read_in_data()
     y = X['made_or_lost']
-
+    """    
     X =  X[['suited',
             'low_card',
             'position',
@@ -48,6 +63,11 @@ def read_in_return_Xy_scaled_no_unused():
     return X, y 
 
 def read_in_return_Xy_all_columns():
+    """Reads in X & y w/ no feature removal
+
+    Returns:
+        X,y: features, target
+    """    
     X = read_in_data()
     y = X['made_or_lost']
 
@@ -56,6 +76,11 @@ def read_in_return_Xy_all_columns():
     return X, y 
 
 def read_in_holdout_return_X_y():
+    """Reads in hold out data and leaves just relevant columns 
+
+    Returns:
+        X, y: features,targets
+    """    
     df = pd.read_csv('../../data/holdout_classification_tournaments.csv')
     df = df.drop(df.columns[0], axis = 1)
     y = df['made_or_lost']

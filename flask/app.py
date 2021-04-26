@@ -49,36 +49,81 @@ def predict():
                           'BB_in_stack': [BB_in_stack]})
 
         prediction = model.predict_proba(X)[0][1] # get prediction, below we are assigning result based on prediction proba
-        if prediction >= 0.655:
+        if prediction >= 0.62:
             result = 'Play That Hand!'
-        if prediction < 0.655 and prediction > 0.595:
-            result = 'Probable Win'
-        if prediction <= 0.595 and prediction > 0.51:
-            result = "Probable Loss"
-        if prediction <= .51:
+        if prediction < 0.62 and prediction > 0.53:
+            result = 'Caution Zone'
+        if prediction <= .53:
             result = "Don't Play It!"
 
         # X['BB_in_stack'] = X['BB_in_stack'].apply(lambda x: round(x, 2))
+    
+    if prediction >= 0.62:
+        page = f'''
+        <table>
+            <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="green">{result}</font></td></tr> 
+            <tr><td></td></tr>
 
-    page = f'''
-    <table>
-        <tr><td>Predicted Outcome:</td><td>{result}</td></tr> 
+            <tr><td><font size=5>Input Data:</font></td><td></td></tr>
+            <tr><td></td></tr>
 
-        <tr><td>Input Data:</td><td></td></tr>
-        <tr><td>High Card:</td><td>{X['high_card'].iloc[0]}</td></tr>
-        <tr><td>Low Card:</td><td>{X['low_card'].iloc[0]}</td></tr>
-        <tr><td>Suited:</td><td>{X['suited'].iloc[0]}</td></tr>
-        <tr><td>Card Rank:</td><td>{X['card_rank'].iloc[0]}</td></tr>
-        <tr><td>Limpers:</td><td>{X['limpers'].iloc[0]}</td></tr>
-        <tr><td>Raises & Reraises:</td><td>{X['raises&reraises'].iloc[0]}</td></tr>
-        <tr><td>Number of Players Having Entered Pot:</td><td>{X['num_players_before'].iloc[0]}</td></tr>
-        <tr><td>Number of Players Yet to Act:</td><td>{X['num_players_after'].iloc[0]}</td></tr>
-        <tr><td>Position:</td><td>{round(X['position'].iloc[0], 2)}</td></tr>
-        <tr><td>BB in Stack:</td><td>{round(X['BB_in_stack'].iloc[0], 2)}</td></tr>
+            <tr><td>Card 1 value:</td><td>{request.form['first_card_value']}</td></tr>
+            <tr><td>Card 2 value:</td><td>{request.form['second_card_value']}</td></tr>
+            <tr><td>Suited:</td><td>{request.form['suited']}</td></tr>
+            <tr><td>Card Rank:</td><td>{X['card_rank'].iloc[0]}</td></tr>
+            <tr><td>Limpers:</td><td>{X['limpers'].iloc[0]}</td></tr>
+            <tr><td>Raises & Reraises:</td><td>{X['raises&reraises'].iloc[0]}</td></tr>
+            <tr><td>Number of Players Having Entered Pot:</td><td>{X['num_players_before'].iloc[0]}</td></tr>
+            <tr><td>Number of Players Yet to Act:</td><td>{X['num_players_after'].iloc[0]}</td></tr>
+            <tr><td>Position:</td><td>{request.form['position_num']}/{request.form['num_players']}</td></tr>
+            <tr><td>BB in Stack:</td><td>{round(X['BB_in_stack'].iloc[0], 2)}</td></tr>
+        <table>
+        <form action="/" method='POST' >        </form>
+
+        '''
+    if prediction < 0.62 and prediction > .53:
+        page = f'''
+        <table>
+            <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="orange">{result}</font></td></tr> 
+            <tr><td></td></tr>
+
+            <tr><td><font size=5>Input Data:</font></td><td></td></tr>
+            <tr><td></td></tr>
+
+            <tr><td>High Card:</td><td>{X['high_card'].iloc[0]}</td></tr>
+            <tr><td>Low Card:</td><td>{X['low_card'].iloc[0]}</td></tr>
+            <tr><td>Suited:</td><td>{request.form['suited']}</td></tr>
+            <tr><td>Card Rank:</td><td>{X['card_rank'].iloc[0]}</td></tr>
+            <tr><td>Limpers:</td><td>{X['limpers'].iloc[0]}</td></tr>
+            <tr><td>Raises & Reraises:</td><td>{X['raises&reraises'].iloc[0]}</td></tr>
+            <tr><td>Number of Players Having Entered Pot:</td><td>{X['num_players_before'].iloc[0]}</td></tr>
+            <tr><td>Number of Players Yet to Act:</td><td>{X['num_players_after'].iloc[0]}</td></tr>
+            <tr><td>Position:</td><td>{request.form['position_num']}/{request.form['num_players']}</td></tr>
+            <tr><td>BB in Stack:</td><td>{round(X['BB_in_stack'].iloc[0], 2)}</td></tr>
+        <table>'''
+    if prediction <= 0.53:
+        page = f'''
+        <table>
+            <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="red">{result}</font></td></tr> 
+            <tr><td></td></tr>
+
+            <tr><td><font size=5>Input Data:</font></td><td></td></tr>
+            <tr><td></td></tr>
+
+            <tr><td>High Card:</td><td>{X['high_card'].iloc[0]}</td></tr>
+            <tr><td>Low Card:</td><td>{X['low_card'].iloc[0]}</td></tr>
+            <tr><td>Suited:</td><td>{request.form['suited']}</td></tr>
+            <tr><td>Card Rank:</td><td>{X['card_rank'].iloc[0]}</td></tr>
+            <tr><td>Limpers:</td><td>{X['limpers'].iloc[0]}</td></tr>
+            <tr><td>Raises & Reraises:</td><td>{X['raises&reraises'].iloc[0]}</td></tr>
+            <tr><td>Number of Players Having Entered Pot:</td><td>{X['num_players_before'].iloc[0]}</td></tr>
+            <tr><td>Number of Players Yet to Act:</td><td>{X['num_players_after'].iloc[0]}</td></tr>
+            <tr><td>Position:</td><td>{request.form['position_num']}/{request.form['num_players']}</td></tr>
+            <tr><td>BB in Stack:</td><td>{round(X['BB_in_stack'].iloc[0], 2)}</td></tr>
+        <table>'''
 
 
 
-    <table>'''
 
     return page 
 

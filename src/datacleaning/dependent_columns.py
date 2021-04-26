@@ -316,7 +316,7 @@ def made_or_lost(x):
 
 
 def prior_actions_for_stats(df): # right now we are deleting the cash game hands - I suppose that's not a problem but consider changing it 
-    """For each hand creates list of actions players made previously. INADVERTEDLY DELETING CASH HANDS HERE
+    """For each hand creates list of actions players made previously. INADVERTEDLY DELETES CASH HANDS HERE
 
     Args:
         df : DataFrame
@@ -327,24 +327,24 @@ def prior_actions_for_stats(df): # right now we are deleting the cash game hands
     '''
     finds actions of player prior to the hand currently being played 
     '''
-    mask = df['TournamentNumber'] != '' # ignores cash hands for time being, make this optional w/ argument? 
+    mask = df['TournamentNumber'] != '' # ignores cash hands for time being, make this optional w/ argument (or just make sure non_tournaments not considered in first iteration)? 
     df = df[mask]
-    df['prior_actions'] = df.HandHistory.apply(lambda x: make_lst(x))
+    df['prior_actions'] = df.HandHistory.apply(lambda x: make_lst(x)) # creates column of empty lists
     unique_TN = df['TournamentNumber'].unique()
-    for num in unique_TN: # iterates through all unique tournament numbers
+    for num in unique_TN: # iterates through all unique tournament numbers 
         mask = df['TournamentNumber'] == num
-        tourn_df = df[mask]
-        for idx, row in tourn_df.iterrows(): # go through each row of tournament 
+        tourn_df = df[mask] # create mask with tournament
+        for idx, row in tourn_df.iterrows(): # iterates through each row of tournament 
             row_dic = {}
             mask = tourn_df.index < idx
-            df_prior = tourn_df[mask] # hands that occured previously in this tournament 
+            df_prior = tourn_df[mask] # mask to get hands that occured previously in this tournament 
             for player in row['player_names']: # looping through all players present in hand
                 player_actions = []
                 for dic in df_prior['action_type']: # looking at all prior hands 
                     if player in dic:
-                        player_actions.append(dic[player])
-                row_dic[player] = player_actions
-            df.loc[idx, 'prior_actions'].append(row_dic)
+                        player_actions.append(dic[player]) 
+                row_dic[player] = player_actions # adds to row dic: key as player name, value as list of prior actions
+            df.loc[idx, 'prior_actions'].append(row_dic) # adds row_dic to the empty list in 'prior_actions' for specific row 
 
     return df
 

@@ -27,23 +27,21 @@ def column_combinations(base_list, considered_columns, r=[1]): # all possible co
         list of lists: columns to be tested 
     """    
     column_list = []
-    # base_list = ['suited','low_card','position','high_card','card_rank','limpers', 'raises&reraises','num_players_before', 'num_players_after','BB_in_stack'] # list of stuff that will always be there
     column_list.append(base_list)
-    # considered_columns = ['total_actions_witnessed_relevant_players','vpip_relavant_players', 'weighted_relevant_vpip', 'buyin'] # list of stuff that won't always be there # , , , , 
 
-    for num in r:
+    for num in r: # gets column combination of sizes included in list 'r'
         subset = list(combinations(considered_columns, num))
         for cols in subset:
-            temp = base_list.copy()
-            for col in cols:
+            temp = base_list.copy() 
+            for col in cols: # adds columns from each considered column combination to copy of base_list
                 temp.append(col)
-            column_list.append(temp)
+            column_list.append(temp) # adds copy + combination to column_list
 
     return column_list
 
 
 def cv(model, X, y):
-    """performs cv and gets mean scores
+    """performs cv and gets mean scores for roc_auc, brier
 
     Args:
         model: model to use sklearn cv on 
@@ -60,6 +58,84 @@ def cv(model, X, y):
 
 
 
+def test_different_models_scale_within(base_list, considered_columns, r=[1]):
+    """tests feature combinations w/ sklearn cv to get brier/roc scores for each model, for each combination of columns
+    base_list columns are always included. Will get every possible combination of 'considered_column' possible given values in 'r'
+    for more details refer to 'column_combinations' function and the 'Combinations' function from itertools
+
+    Args:
+        base_list (list): columns to always be included in test
+        considered_columns (list): columns that will possibly be included
+        r (list, optional): Size of the combinations made with 'considered_columns'. Defaults to [1], meaning ever 'considered_column' will be included once
+
+    Returns:
+        DataFrame: Dataframe with 4 columns: the name of the model, the columns (besides the base columns) considered, brier score, roc auc score
+    """    
+
+    X, y = training_data_Xy(subset=False)
+
+
+    result = pd.DataFrame(columns=['model', 'columns', 'brier', 'roc_auc']) 
+
+    col_lst = column_combinations(base_list, considered_columns, r)
+    model_dic = {0:'RandomForest' , 1: 'GradientBoost', 2: 'AdaBoost', 3:'KNN', 4: 'logistic'} # dictionary to get names of models
+    model_lst = [RandomForestClassifier(), GradientBoostingClassifier(), AdaBoostClassifier(), KNeighborsClassifier(), LogisticRegression()] # models to be considered
+    count = 0
+    for idx, model in enumerate(model_lst): # iterate through model list
+        print(idx)
+        for cols in col_lst: # iterate through column list
+            X_subset = X[cols] # reduces X to just columns that ought to be considered
+            X_cols = list(X_subset.columns)
+            SS = StandardScaler()
+            X_subset = pd.DataFrame(data=SS.fit_transform(X_subset), columns = X_cols) # scales X
+
+            roc_auc, brier = cv(model, X_subset, y) # get scores using cv function
+
+            for col in base_list: # removes columns from base list from X_cols to remove extra info from DataFrame
+                X_cols.remove(col)  
+
+
+            result.loc[count] = [model_dic[idx], X_cols, brier, roc_auc] #inserting results into DataFrame
+            count += 1
+
+    return result 
+
+if __name__ == "__main__":
+
+    result = test_different_models_scale_within(base_list=['BB_in_stack', 'suited','position','raises&reraises','num_players_before', 'num_players_after','card_rank'], considered_columns = ['limpers', 'low_card','high_card'], r=[1,2,3])
+
+    # result.to_csv('../../data/classification_compare_limpers_low_high_card.csv')
+
+    # X, y = read_in_return_Xy_all_columns()
+    # result = column_combinations(base_list=['suited','low_card','position','high_card','card_rank', 'raises&reraises','num_players_before', 'num_players_after','BB_in_stack'], considered_columns = ['limpers', 'callers', 'limps&calls'])
+    # for cols in result:
+    #     X_subset = X[cols]
+    #     print(X_subset.info())
+    # maybe get rid of buyin?
+    # maybe get rid of position?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# SHOULD PROBABLY JUST DELETE THIS CODE BUT COMPARE TO FUNCTION ABOVE FIRST
 # def test_different_models_sans_XGB_Ridge():
 
 #     X, y = read_in_return_Xy_scaled_no_unused()
@@ -96,58 +172,3 @@ def cv(model, X, y):
 #             count += 1
 
 #     return result 
-
-
-
-def test_different_models_sans_XGB_Ridge_scale_within(base_list, considered_columns, r=[1]):
-    """tests feature combinations w/ sklearn cv to get brier/roc scores
-
-    Args:
-        base_list (list of columns to be considered): list of columns to always be included
-        considered_columns ([type]): [description]
-
-    Returns:
-        DataFrame: results for each model with each column combination
-    """    
-
-    X, y = read_in_training_data(subset=False)
-
-
-    result = pd.DataFrame(columns=['model', 'columns', 'brier', 'roc_auc']) 
-
-    col_lst = column_combinations(base_list, considered_columns, r)
-    model_dic = {0:'RandomForest' , 1: 'GradientBoost', 2: 'AdaBoost', 3:'KNN', 4: 'logistic'}
-    model_lst = [RandomForestClassifier(), GradientBoostingClassifier(), AdaBoostClassifier(), KNeighborsClassifier(), LogisticRegression()]
-    count = 0
-    for idx, model in enumerate(model_lst):
-        print(idx)
-        for cols in col_lst:
-            X_subset = X[cols]
-            X_cols = list(X_subset.columns)
-            SS = StandardScaler()
-            X_subset = pd.DataFrame(data=SS.fit_transform(X_subset), columns = X_cols)
-
-            roc_auc, brier = cv(model, X_subset, y)
-
-            for col in base_list:
-                X_cols.remove(col)  
-
-
-            result.loc[count] = [model_dic[idx], X_cols, brier, roc_auc] # can i index like this? 
-            count += 1
-
-    return result 
-
-if __name__ == "__main__":
-
-    result = test_different_models_sans_XGB_Ridge_scale_within(base_list=['BB_in_stack', 'suited','position','raises&reraises','num_players_before', 'num_players_after','card_rank'], considered_columns = ['limpers', 'low_card','high_card'], r=[1,2,3])
-
-    # result.to_csv('../../data/classification_compare_limpers_low_high_card.csv')
-
-    # X, y = read_in_return_Xy_all_columns()
-    # result = column_combinations(base_list=['suited','low_card','position','high_card','card_rank', 'raises&reraises','num_players_before', 'num_players_after','BB_in_stack'], considered_columns = ['limpers', 'callers', 'limps&calls'])
-    # for cols in result:
-    #     X_subset = X[cols]
-    #     print(X_subset.info())
-    # maybe get rid of buyin?
-    # maybe get rid of position?

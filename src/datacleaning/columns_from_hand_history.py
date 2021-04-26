@@ -568,7 +568,7 @@ def raises_and_reraises(x): # pretty sure this works but consider checking to ma
     """returns 1 if there was a raise, and 1 + n for ever n reraise after
 
     Args:
-        handhistory: string data of hands
+        x: hand history from apply function above - string data of hands
 
     Returns:
         int: number of raises and reraises that occured prior to my first action 
@@ -576,29 +576,29 @@ def raises_and_reraises(x): # pretty sure this works but consider checking to ma
     bet = 0
     player_name = 0
     player_amount_bet = {} # store amount bet to delineate shoves from calls (all shoves are shoves but some are raises and some are calls)       
-    for elem in x: # getting amount put in prior to betting
+    for elem in x: # getting amount blinded/antied prior to betting
         if '[cards]' in elem and ('type="1"' in elem or 'type="2"' in elem): # ignores antis  
             for sub_string in elem.split():
-                if 'player' in sub_string:
+                if 'player' in sub_string: # get player name
                     player_name = sub_string.replace('player="', '').replace('"', '') 
-                if 'sum' in sub_string:
+                if 'sum' in sub_string: # get amount blinded/antied
                     bet = float(sub_string.replace('sum="', '').replace('"', '')) 
-                player_amount_bet[player_name] = bet
+                player_amount_bet[player_name] = bet # add player name as key and bet as value to dictionary
                             
-    for idx, elem in enumerate(x): 
+    for idx, elem in enumerate(x): # find beginning of pre-flop action
         if 'Pocket' in elem:
             start = idx
     subset = x[start+1:] # subset containing preflop action until end
-    for idx, elem in enumerate(subset):
+    for idx, elem in enumerate(subset): # find end of preflop action
         if '</round>' in elem:
             stop = idx
             break 
     subset = subset[:stop] # subset containing just preflop action   
     
-    count = 0
+    count = 0 # variable to count the number of raises/reraises
     for elem in subset:
 
-        if 'Hero' in elem:
+        if 'Hero' in elem: # ends process if action arrives to me
             break
         else:
             if 'type="23"' in elem or 'type="7"' in elem: # finds shoves & raises
@@ -607,9 +607,9 @@ def raises_and_reraises(x): # pretty sure this works but consider checking to ma
                         player_name = sub_string.replace('player="', '').replace('"', '') 
                     if 'sum' in sub_string:
                         bet = float(sub_string.replace('sum="', '').replace('"', ''))  
-                if bet > max(player_amount_bet.values()):
+                if bet > max(player_amount_bet.values()): # finds whether bet was bigger than a call (type 7 is shove, which isn't necessarily a raise)
                     count += 1
-                if player_name in player_amount_bet:
+                if player_name in player_amount_bet: # adds player bet to amount from blinds
                     player_amount_bet[player_name] += bet
                 else:
                     player_amount_bet[player_name] = bet

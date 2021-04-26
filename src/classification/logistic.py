@@ -1,11 +1,11 @@
 from grid_and_thresh_funcs import grid_search
-from data_prep import read_in_return_Xy_scaled_no_unused
+from data_prep import training_data_Xy
 from sklearn.linear_model import LogisticRegression
 import pandas as pd
 
 
 lr = LogisticRegression(max_iter=10000)
-X, y = read_in_return_Xy_scaled_no_unused()
+X, y = training_data_Xy(scale=True)
 
 
 param_grid_L1 = {'penalty': ['l1'],

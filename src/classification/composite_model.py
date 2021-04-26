@@ -1,5 +1,5 @@
 from grid_and_thresh_funcs import grid_search
-from data_prep import read_in_return_Xy_scaled_no_unused
+from data_prep import training_data_Xy
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import StratifiedKFold
@@ -7,7 +7,7 @@ from sklearn.metrics import f1_score
 import numpy as np 
 import pandas as pd
 
-X, y = read_in_return_Xy_scaled_no_unused()
+X, y = training_data_Xy(scale=True)
 
 def model_eval(X, y, composite=True):
     """gets f1 score thru cross val of composite vs gradient boost

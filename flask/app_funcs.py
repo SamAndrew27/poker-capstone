@@ -76,11 +76,11 @@ def return_card_vals(cards):
     return rank, lc, hc
 
 
-def cards_numeric(cards):
+def cards_numeric(x):
     """Takes in cards and spits out card_rank
 
     Args:
-        cards (list): list of my hole cards
+        x (list): list of my hole cards
 
     Returns:
         float: card_rank, as dicated by the Chen Formula (sans rounding)
@@ -140,11 +140,11 @@ def cards_numeric(cards):
                     
     return result # I elected not to round up as the formula dictates, not sure what benefit it would have in this scenario
  
-def highest_card(cards):
+def highest_card(x):
     """Finds value of highest card
 
     Args:
-        cards (list): list of my 2 cards
+        x (list): list of my 2 cards
 
     Returns:
         int: value of card, 2 being lowest and 14 (Ace) being highest
@@ -167,11 +167,11 @@ def highest_card(cards):
             result = int(max(numeric_card_lst))
     return result
 
-def lowest_card(cards):
+def lowest_card(x):
     """find lowest card
 
     Args:
-        cards (list): list of my 2 cards
+        x (list): list of my 2 cards
 
     Returns:
         int: value of card, 2 being lowest and 14 (Ace) being highest

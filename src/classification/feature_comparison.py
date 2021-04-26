@@ -4,7 +4,7 @@ from itertools import combinations
 import numpy as np 
 # from class_prep import read_in_return_X_scaled, read_in_return_X_scaled_no_time
 
-from data_prep import read_in_return_Xy_scaled_no_unused, read_in_return_Xy_all_columns
+from data_prep import training_data_Xy
 from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier 
@@ -110,7 +110,7 @@ def test_different_models_sans_XGB_Ridge_scale_within(base_list, considered_colu
         DataFrame: results for each model with each column combination
     """    
 
-    X, y = read_in_return_Xy_all_columns()
+    X, y = read_in_training_data(subset=False)
 
 
     result = pd.DataFrame(columns=['model', 'columns', 'brier', 'roc_auc']) 

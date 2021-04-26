@@ -1,6 +1,6 @@
 from sklearn.ensemble import GradientBoostingClassifier
 import pandas as pd
-from data_prep import read_in_return_Xy_no_unused, read_in_return_Xy_scaled_no_unused
+from data_prep import training_data_Xy
 from grid_and_thresh_funcs import grid_search
 from sklearn.model_selection import cross_val_score
 import numpy as np
@@ -8,7 +8,7 @@ import pickle
 
 gb = GradientBoostingClassifier()
 
-X, y = read_in_return_Xy_scaled_no_unused()
+X, y = training_data_Xy()
 
 param_grid1 = {'learning_rate': [.05, .1, .2],
             'n_estimators': [50,100, 150,250,300],

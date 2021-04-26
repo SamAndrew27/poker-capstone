@@ -1,5 +1,5 @@
 from sklearn.ensemble import GradientBoostingClassifier
-from capstone3_data_prep import read_in_return_Xy_no_unused, read_in_return_Xy_scaled_no_unused
+from capstone3_data_prep import training_data_Xy
 import pandas as pd 
 import numpy as np 
 from grid_and_thresh_funcs import threshold_testing, confusion, confusion_ratios

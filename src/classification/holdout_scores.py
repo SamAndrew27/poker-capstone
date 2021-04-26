@@ -1,6 +1,6 @@
 from sklearn.ensemble import GradientBoostingClassifier
 import pandas as pd
-from data_prep import read_in_return_Xy_no_unused, read_in_holdout_return_X_y
+from data_prep import training_data_Xy, read_in_holdout_Xy
 from sklearn.model_selection import cross_val_score
 import numpy as np
 from sklearn.metrics import f1_score, confusion_matrix, accuracy_score, recall_score, precision_score
@@ -15,8 +15,8 @@ def create_model_load_data():
         y_hold: Holdout data targets
     """    
     model = GradientBoostingClassifier(learning_rate=.01, n_estimators=90, min_samples_leaf=6 , min_samples_split=4 ,max_features= 3,max_depth= 5,subsample= .6)
-    X, y = read_in_return_Xy_no_unused()
-    X_hold, y_hold = read_in_holdout_return_X_y()
+    X, y = training_data_Xy()
+    X_hold, y_hold = read_in_holdout_Xy()
     model.fit(X,y)
     return model, X_hold, y_hold
 
@@ -223,14 +223,14 @@ def run_test_single_thresh(thresh=.55, iterations = 10):
     return np.mean(result)
 
 if __name__=="__main__":
-    lower_df, middle_df_true,middle_df_false, top_df = run_multiple_test(lower_thresh=0.51, upper_thresh=0.595, save=False, iterations=50, split_middle=True)
+    # lower_df, middle_df_true,middle_df_false, top_df = run_multiple_test(lower_thresh=0.51, upper_thresh=0.595, save=False, iterations=50, split_middle=True)
     # lower_df, middle_true, middle_false, top_df = run_multiple_test(lower_thresh=0.51, upper_thresh=0.52, save=False, iterations=10, split_middle=True)
 
-    # print(run_test_single_thresh(thresh=.595, iterations=50))
+    print(run_test_single_thresh(thresh=.53, iterations=50))
 
     # print(np.mean(top_df))
-    print(np.mean(middle_df_true))
-    print(np.mean(middle_df_false))
+    # print(np.mean(middle_df_true))
+    # print(np.mean(middle_df_false))
 
     # print(np.mean(lower_df))
 
@@ -256,6 +256,82 @@ if __name__=="__main__":
     # print(middle_thresh['prediction_proba'].max())
     # print(middle_thresh['prediction_proba'].min())
     # print(lower_thresh['prediction_proba'].max())
+
+# RESULTS WITH NEW THRESHOLDs
+#######################################################
+
+    # 0.62
+    # precision      0.746617
+    # accuracy       0.628919
+    # recall         0.566667
+    # f1             0.644270
+    # npv            0.532614
+    # tp           817.700000
+    # fp           277.540000
+    # tn           712.460000
+    # fn           625.300000
+
+
+    # 0.53
+    # precision       0.651494
+    # accuracy        0.653095
+    # recall          0.892599
+    # f1              0.753213
+    # npv             0.660161
+    # tp           1288.020000
+    # fp            689.040000
+    # tn            300.960000
+    # fn            154.980000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # should redo the ones that aren't specific df's and get scores for whole dataframe 
 

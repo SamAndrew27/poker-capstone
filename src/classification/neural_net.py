@@ -1,4 +1,4 @@
-from data_prep import read_in_return_Xy_scaled_no_unused
+from data_prep import training_data_Xy
 import pandas as pd 
 import numpy as np 
 from tensorflow.keras.models import Sequential
@@ -14,7 +14,7 @@ from tensorflow.keras.optimizers import Adam
 from sklearn.metrics import f1_score
 
 # load dataset
-X, y = read_in_return_Xy_scaled_no_unused()
+X, y = training_data_Xy(scale=True)
 # encode class values as integers
 
 # baseline model

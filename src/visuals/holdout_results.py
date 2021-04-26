@@ -7,7 +7,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 plt.style.use('ggplot')
 plt.rcParams.update({'font.size': 20})
 
-def get_results():
+def get_results(lower, upper):
     X, y = read_in_training_return_Xy()
     X_holdout, y_holdout = read_in_holdout_return_X_y()
 
@@ -16,7 +16,7 @@ def get_results():
     pred = gb_final.predict_proba(X_holdout)
     results = pd.DataFrame(data = {'truth': y_holdout, 'prediction': pred[:, 1]})
 
-    results['prediction_category'] = results['prediction'].apply(lambda x: bin_predictions(x))
+    results['prediction_category'] = results['prediction'].apply(lambda x: bin_predictions(x, lower, upper))
     won_mask = results['truth'] == 1
     won = results[won_mask]
     lost_mask = results['truth'] == 0
@@ -34,18 +34,16 @@ def get_results():
 #     if x <= .51:
 #         return "Don't Do It!"
 
-def bin_predictions(x):
-    if x >= .655:
+def bin_predictions(x, lower, upper):
+    if x >= upper:
         return 0
-    if x < .65 and x > .595:
+    if x < upper and x > lower:
         return 1
-    if x <= .595 and x > .51:
+    if x <= lower:
         return 2
-    if x <= .51:
-        return 3
 
-def plot_results():
-    won, lost = get_results()
+def plot_results(lower,upper):
+    won, lost = get_results(lower,upper)
     won = won.prediction_category.value_counts().sort_index()
     lost = lost.prediction_category.value_counts().sort_index()
 
@@ -94,6 +92,54 @@ def plot_results():
 
 
 
+
+def plot_results_3_categories(lower,upper):
+    won, lost = get_results(lower,upper)
+    won = won.prediction_category.value_counts().sort_index()
+    lost = lost.prediction_category.value_counts().sort_index()
+
+    won_percent = won / (won+lost)
+    lost_percent = lost / (won+lost)
+
+    q2_won = round(100 * won_percent[2], 1)
+    q2_lost = round(100 * lost_percent[2], 1)
+    q1_won = round(100 * won_percent[1], 1)
+    q1_lost = round(100 * lost_percent[1], 1)
+    q0_won = round(100 * won_percent[0], 1)
+    q0_lost = round(100 * lost_percent[0], 1)
+
+    labels = ['Play It!', "Caution Zone", "Don't Do It!", ]
+
+    print(won)
+    print(won_percent)
+    print(lost)
+    print(lost_percent)
+
+    fig, ax = plt.subplots(figsize=(20,20))
+
+    width = 0.35
+    x = np.arange(len(labels))
+    won_ax = ax.bar(x=x - width/2, height= won, width=width, label="Won/Broke Even")
+    lost_ax = ax.bar(x=x + width/2, height= lost, width=width, label="Lost")
+    ax.set_ylabel('Number of Hands')
+    ax.set_title('Number of Hands Won or Lost \n in Each Grouping')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
+
+    plt.text(x= .09, y = 40, s=f'{q0_lost}%', fontsize=20)
+    plt.text(x= -.27, y = 40, s=f'{q0_won}%', fontsize=20)
+
+    plt.text(x= 1.1, y = 40, s=f'{q1_lost}%', fontsize=20)
+    plt.text(x= .75, y = 40, s=f'{q1_won}%', fontsize=20)
+
+    plt.text(x= 2.1, y = 40, s=f'{q2_lost}%', fontsize=20)
+    plt.text(x= 1.75, y = 40, s=f'{q2_won}%', fontsize=20)
+
+
+
+    return ax 
+
 if __name__=="__main__":
     # gb_final.fit(X,y)
     # pred = gb_final.predict_proba(X_holdout)
@@ -119,5 +165,5 @@ if __name__=="__main__":
     # lost_percent = lost / (won+lost)
     # bottom_won = round(100 * won_percent["Don't Do It!"], 1)
     # print(bottom_won)
-    ax = plot_results()
+    ax = plot_results_3_categories(.53,.62)
     plt.show()

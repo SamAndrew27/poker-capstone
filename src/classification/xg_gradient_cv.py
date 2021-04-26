@@ -2,12 +2,12 @@ from xgboost import XGBClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import roc_auc_score, brier_score_loss 
 from sklearn.model_selection import StratifiedKFold, cross_val_score, KFold
-from data_prep import read_in_return_Xy_scaled_no_unused
+from data_prep import training_data_Xy
 import pandas as pd 
 import numpy as np 
 
 # load data
-X, y = read_in_return_Xy_scaled_no_unused()
+X, y = training_data_Xy()
 
 def compare_gradient_xg_boost(X,y):
     """using cross val, compares gradient boost to XGboost, results printed to terminal 

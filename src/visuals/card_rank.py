@@ -20,7 +20,7 @@ def plot_card_rank_sns(setup='stack'): # consider changing to offset (rather tha
     fig, ax = plt.subplots(figsize=(20,20))
     # cmap = sns.cm.rocket_r
     df['Outcome'] = df['made_or_lost'].apply(lambda x: give_names(x))
-    ax = sns.histplot(data=df, x='card_rank', hue='Outcome', bins=20, element='step', hue_order=['Made Money/Broke Even', 'Lost Money'])
+    ax = sns.histplot(data=df, x='card_rank', hue='Outcome', bins=20, element='step', hue_order=['Won/Broke Even', 'Lost'])
     ax.set_xlabel('Card Rank')
     
     # ax.legend()
@@ -50,9 +50,9 @@ def card_rank_violin():
 
 def give_names(x):
     if x == 0:
-        return 'Lost Money'
+        return 'Lost'
     else:
-        return 'Made Money/Broke Even'
+        return 'Won/Broke Even'
 
 if __name__ == "__main__":
 

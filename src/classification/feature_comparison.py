@@ -107,7 +107,7 @@ def test_different_models_sans_XGB_Ridge_scale_within(base_list, considered_colu
         considered_columns ([type]): [description]
 
     Returns:
-        [type]: [description]
+        DataFrame: results for each model with each column combination
     """    
 
     X, y = read_in_return_Xy_all_columns()

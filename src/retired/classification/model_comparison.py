@@ -1,3 +1,5 @@
+# MOVING THIS TO RETIRED, as it is partly included in feature comparison. Will leave note that it's over there in case there's any good stuff in it 
+
 import pandas as pd 
 from sklearn.model_selection import cross_val_score
 from itertools import combinations 
@@ -12,6 +14,11 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import brier_score_loss, roc_auc_score
 
 def column_combinations(): # all possible combinations of columns (that we are considering)
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """    
     column_list = []
     base_list = ['buyin', 'BB_in_stack', 'total_players', 'position', 'suited',  'low_card','high_card','card_rank','limpers', 'raises&reraises','num_players_before', 'num_players_after','vpip_relavant_players','total_actions_witnessed_relevant_players'] # list of stuff that will always be there
     column_list.append(base_list)

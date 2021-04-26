@@ -17,6 +17,17 @@ X, y = read_in_return_Xy_no_unused()
 
 
 def test_prediction_results(X, y, model, num_folds=5):
+    """does cv to get predictions for entire dataframe
+
+    Args:
+        X (array): features
+        y (array): target
+        model (sklearn model): model to be tested
+        num_folds (int, optional): number of folds in cross val. Defaults to 5.
+
+    Returns:
+        [type]: [description]
+    """    
     kf = KFold(n_splits=num_folds, shuffle=True)
     results = pd.DataFrame(columns=['prediction', 'truth'], index=X.index)
     for train, test in kf.split(X):
@@ -36,6 +47,16 @@ def test_prediction_results(X, y, model, num_folds=5):
     return results
 
 def test_results(results, upperbound, lowerbound):
+    """gets dataframe of predictions/target, gets subset of that dataframe bounded by two thresholds, returns portion of that dataframe that is actually true
+
+    Args:
+        results (dataframe): contains predictions/actual values
+        upperbound (float): upper bound of prediction threshold
+        lowerbound (flaot): lowerbound of prediction threshold
+
+    Returns:
+        float: number of positive cases in subsection considered divided by length of subsection considered 
+    """    
     # results = results.mask((results['prediction'] <= upperbound) & (results['prediction'] >= lowerbound))
     upper_mask = results['prediction'] <= upperbound
     results = results[upper_mask]

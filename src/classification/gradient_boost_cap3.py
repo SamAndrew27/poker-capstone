@@ -55,6 +55,13 @@ param_grid3 = {'learning_rate': [.01],
             'max_depth': [5],
             'subsample': [.2, .3, .4, .5, .6, .8]}
 def feature_importance(model, X, y):
+    """prints feature importances
+
+    Args:
+        model (model): model
+        X (array): features
+        y (array): target
+    """    
     cols = list(X.columns)
 
     model.fit(X,y)

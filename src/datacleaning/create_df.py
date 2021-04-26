@@ -11,7 +11,7 @@ def load_df():
     Returns:
         Pandas DataFrame: as contained in original backed up data
     """    
-    conn = sqlite3.connect("/home/sam/Documents/DSI/capstone/poker/data/sql_data/dh_backup_20210330_081745/drivehud.db")
+    conn = sqlite3.connect("../../data/sql_data/dh_backup_20210425_060808/drivehud.db")
     hand_history = pd.read_sql_query("select * from HandHistories;", conn)
     hand_history.HandHistory = hand_history.HandHistory.str.split('\r\n')
 
@@ -44,4 +44,4 @@ if __name__ == "__main__":
     df = implement_column_creation(df)
     print(df.info())
 
-    df.to_csv('df_4-24.csv')
+    df.to_csv('../../data/df_4-25.csv')

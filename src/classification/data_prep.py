@@ -10,7 +10,7 @@ def read_in_data():
     Returns:
         DataFrame: returns pandas dataframe from csv
     """    
-    df = pd.read_csv('../../data/train_classification_tournaments.csv')
+    df = pd.read_csv('../../data/train_classification_tournaments_4-25.csv')
     df = df.drop(df.columns[0], axis = 1)
 
     return df
@@ -81,7 +81,7 @@ def read_in_holdout_return_X_y():
     Returns:
         X, y: features,targets
     """    
-    df = pd.read_csv('../../data/holdout_classification_tournaments.csv')
+    df = pd.read_csv('../../data/holdout_classification_tournaments_4-25.csv')
     df = df.drop(df.columns[0], axis = 1)
     y = df['made_or_lost']
     X =  df[['suited',

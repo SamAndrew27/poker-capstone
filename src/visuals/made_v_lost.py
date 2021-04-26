@@ -2,13 +2,13 @@ import seaborn as sns
 import matplotlib.pyplot as plt 
 import numpy as np
 import pandas as pd
-from load_df import load_whole
+from load_df import split_won_lost
 plt.style.use('ggplot')
 
 plt.rcParams.update({'font.size': 20})
 
 def plot_made_v_lost():
-    won, lost, df = load_whole()
+    won, lost, df = split_won_lost()
     won_percent = round(100 * len(won) / len(df),1)
     lost_percent = round(100 * len(lost) / len(df),1)
 

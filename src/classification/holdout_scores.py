@@ -346,7 +346,7 @@ if __name__=="__main__":
 
 
 
-# SCORES BEFORE ADDITIONAL
+# SCORES BEFORE ADDITIONAL rows!!!
 #######################################################################################################
     # range .595 to 0.655 alone predicted as positive
     # precision      0.669145

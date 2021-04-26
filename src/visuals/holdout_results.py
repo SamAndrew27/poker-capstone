@@ -2,13 +2,13 @@ import seaborn as sns
 import matplotlib.pyplot as plt 
 import numpy as np
 import pandas as pd
-from load_df import load_whole, read_in_holdout_return_X_y, read_in_return_Xy_no_unused
+from load_df import read_in_holdout_return_X_y, read_in_training_return_Xy
 from sklearn.ensemble import GradientBoostingClassifier
 plt.style.use('ggplot')
 plt.rcParams.update({'font.size': 20})
 
 def get_results():
-    X, y = read_in_return_Xy_no_unused()
+    X, y = read_in_training_return_Xy()
     X_holdout, y_holdout = read_in_holdout_return_X_y()
 
     gb_final = GradientBoostingClassifier(learning_rate=.01, n_estimators=90, min_samples_leaf=6 , min_samples_split=4 ,max_features= 3,max_depth= 5,subsample= .6)

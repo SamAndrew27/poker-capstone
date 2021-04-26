@@ -2,14 +2,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt 
 import numpy as np
 import pandas as pd
-from load_df import load_whole, won_lost_for_num_players
+from load_df import split_won_lost, won_lost_for_num_players
 plt.style.use('ggplot')
 plt.rcParams.update({'font.size': 20})
 
 
 
 def plot_num_players_under3():
-    won, lost ,_ = load_whole()
+    won, lost ,_ = split_won_lost()
     mask = won['num_players_before'] < 3
     won = won[mask]
     mask = lost['num_players_before'] < 3
@@ -31,7 +31,7 @@ def plot_num_players_under3():
     return ax 
 
 def plot_num_players_over3():
-    won, lost ,_ = load_whole()
+    won, lost ,_ = split_won_lost()
 
     mask = won['num_players_before'] >= 3
     won = won[mask]    

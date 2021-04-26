@@ -1,4 +1,4 @@
-from load_df import load_whole
+from load_df import join_training_holdout, split_won_lost
 import seaborn as sns 
 import matplotlib.pyplot as plt 
 import numpy as np
@@ -16,7 +16,7 @@ plt.rcParams.update({'font.size': 20})
 
 # keep playing with this one, run it by DSR/instructor
 def plot_card_rank_sns(setup='stack'): # consider changing to offset (rather than stacked barchart)
-    won, lost, df = load_whole()
+    df = join_training_holdout()
     fig, ax = plt.subplots(figsize=(20,20))
     # cmap = sns.cm.rocket_r
     df['Outcome'] = df['made_or_lost'].apply(lambda x: give_names(x))
@@ -30,7 +30,7 @@ def plot_card_rank_sns(setup='stack'): # consider changing to offset (rather tha
     return ax 
 
 def card_rank_bar():
-    won, lost, df = load_whole()
+    won, lost, df = split_won_lost()
     labels = sorted(list(df['card_rank'].unique()))
     x = np.arange(len(labels))
     width = 0.35
@@ -43,7 +43,7 @@ def card_rank_bar():
 def card_rank_violin():
     fig, ax = plt.subplots()
 
-    won, lost, df = load_whole()
+    won, lost, df = split_won_lost()
     ax = sns.violinplot(data=df, x='made_or_lost', y='card_rank')
     
     return ax 

@@ -2,14 +2,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt 
 import numpy as np
 import pandas as pd
-from load_df import load_whole
+from load_df import split_won_lost
 plt.style.use('ggplot')
 
 
 plt.rcParams.update({'font.size': 20})
 
 def plot_raises():
-    won, lost, __ = load_whole()
+    won, lost, __ = split_won_lost()
     won['raises&reraises'] = won['raises&reraises'].apply(lambda x: change_raise(x))
     lost['raises&reraises'] = lost['raises&reraises'].apply(lambda x: change_raise(x))
 

@@ -104,7 +104,18 @@ def read_in_holdout_Xy(subset=True):
 
     return X, y 
 
+def get_data_and_join(subset=True):
+    X_training, y_training = training_data_Xy(subset)
+    X_hold, y_hold = read_in_holdout_Xy(subset)
 
+    X_training['made_or_lost'] = y_training
+    X_hold['made_or_lost'] = y_hold
+    all_data = pd.concat([X_training, X_hold], ignore_index=True)
+
+    y = all_data['made_or_lost']
+    X = all_data.drop(['made_or_lost'], axis=1)
+
+    return X, y 
 
 
 if __name__=="__main__":

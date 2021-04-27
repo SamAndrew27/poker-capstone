@@ -1,6 +1,6 @@
 from sklearn.ensemble import GradientBoostingClassifier
 import pandas as pd
-from data_prep import training_data_Xy
+from data_prep import training_data_Xy, get_data_and_join
 from grid_and_thresh_funcs import grid_search
 from sklearn.model_selection import cross_val_score
 import numpy as np
@@ -70,6 +70,8 @@ def feature_importance(model, X, y):
 
 if __name__=="__main__":
     gb_final = GradientBoostingClassifier(learning_rate=.01, n_estimators=90, min_samples_leaf=6 , min_samples_split=4 ,max_features= 3,max_depth= 5,subsample= .6)
+    X, y = get_data_and_join(subset=False)
+    print(X.info())
     # grid_search(X, y, gb, param_grid3)
     # subsample anywhere between .2-.8
     # seems to always prefer 2 & 3 for max depth max features
@@ -78,4 +80,4 @@ if __name__=="__main__":
     # gb_final.fit(X,y)
     # pickle.dump(gb_final, open('gradient_boost_cap3.pickle', 'wb'))
     # feature_importance(gb_final, X, y)
-    print(X.info())
+    # print(X.info())

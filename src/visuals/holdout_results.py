@@ -108,7 +108,7 @@ def plot_results_3_categories(lower,upper):
     q0_won = round(100 * won_percent[0], 1)
     q0_lost = round(100 * lost_percent[0], 1)
 
-    labels = ['Play It!', "Caution Zone", "Don't Do It!", ]
+    labels = ['Play It!', "Caution", "Don't Do It!", ]
 
     print(won)
     print(won_percent)

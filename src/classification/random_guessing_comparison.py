@@ -23,7 +23,7 @@ def test_values(true, pred):
     # return pd.DataFrame({'precision':precision, 'accuracy':accuracy, 'recall':recall, 'f1':f1, 'npv':npv, 'tp':tp, 'fp':fp, 'tn':tn, 'fn':fn}, index=[idx])
 
 
-def multiple_tests(iterations = 100 , probs=[0.405, 0.595]):
+def multiple_tests_random(iterations = 100 , probs=[0.405, 0.595]):
     results = pd.DataFrame(columns=['precision', 'accuracy', 'recall', 'roc auc', 'brier', 'f1', 'npv', 'tp', 'fp', 'tn', 'fn' ], index=list(range(iterations)))
     _, y_hold = read_in_holdout_Xy()
 
@@ -37,10 +37,17 @@ def multiple_tests(iterations = 100 , probs=[0.405, 0.595]):
     
     return results
 
+def test_all_positive():
+    results = pd.DataFrame(columns=['precision', 'accuracy', 'recall', 'roc auc', 'brier', 'f1', 'npv', 'tp', 'fp', 'tn', 'fn' ], index=[0])
+    _, y_hold = read_in_holdout_Xy()
+    preds = np.ones(shape=y_hold.shape)
+    results.iloc[0] = test_values(y_hold, preds)
+    return results
+
 if __name__=="__main__":
     
-    
-    print(np.mean(multiple_tests(iterations=1000)))
+    print(np.mean(test_all_positive()))
+    # print(np.mean(multiple_tests_random(iterations=1000)))
 
     # WEIGHTED
     # precision      0.593202

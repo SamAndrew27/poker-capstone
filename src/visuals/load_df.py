@@ -53,7 +53,7 @@ def read_in_training_return_Xy(remove_columns=True):
 
 
 
-def join_training_holdout():
+def join_training_holdout(target=False):
     X, y = read_in_training_return_Xy()
     X_hold, y_hold = read_in_holdout_return_X_y()
     X['made_or_lost'] = y
@@ -61,7 +61,14 @@ def join_training_holdout():
 
     total_df = pd.concat([X, X_hold], ignore_index=True)
 
-    return total_df
+    if target:
+        X = total_df
+        y = X['made_or_lost']
+        del X['made_or_lost']
+        return X, y 
+    else:
+
+        return total_df
     
 def split_won_lost():
     '''
@@ -75,7 +82,6 @@ def split_won_lost():
     lost_mask = df['made_or_lost'] == 0
     lost = df[lost_mask]
     return won, lost, df
-
 
 
 

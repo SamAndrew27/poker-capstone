@@ -21,7 +21,7 @@ def predict():
     Returns:
         html page: shows variables used to make prediction & prediction 
     """    
-    with open('gradient_boost_cap3.pickle', 'rb') as f:
+    with open('models/final_model.pickle', 'rb') as f:
         model = pickle.load(f)
 
         position = int(request.form['position_num']) / int(request.form['num_players']) # use position_num divided by total players to get 'position' variable
@@ -29,11 +29,11 @@ def predict():
         suited = suited_to_int(request.form['suited']) # converts input 'yes/no' to 1/0
 
 
-        first_val = request.form['first_card_value']
-        second_val = request.form['second_card_value']
+        first_card = request.form['first_card_value']
+        second_card = request.form['second_card_value']
 
         
-        rank, low_card, high_card = construct_cards(first_val, second_val, suited=suited) # uses card values and suited to get rank, low card, highcard
+        rank, low_card, high_card = construct_cards(first_card, second_card, suited=suited) # uses card values and suited to get rank, low card, highcard
         
         
 
@@ -67,9 +67,9 @@ def predict():
             <tr><td><font size=5>Input Data:</font></td><td></td></tr>
             <tr><td></td></tr>
 
-            <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{X['high_card'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{X['low_card'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited']}</font><b></td></tr>
+            <tr><td><font size=4>First Card</font></td><td><b><font size=4>{first_card.capitalize()}</font><b></td></tr>
+            <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{second_card.capitalize()}</font><b></td></tr>
+            <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited'].capitalize()}</font><b></td></tr>
             <tr><td><font size=4>Card Rank:</font></td><td><b><font size=4>{X['card_rank'].iloc[0]}</font><b></td></tr>
             <tr><td><font size=4>Limpers:</font></td><td><b><font size=4>{X['limpers'].iloc[0]}</font><b></td></tr>
             <tr><td><font size=4>Raises & Reraises:</font></td><td><b><font size=4>{X['raises&reraises'].iloc[0]}</font><b></td></tr>
@@ -92,9 +92,9 @@ def predict():
             <tr><td><font size=5>Input Data:</font></td><td></td></tr>
             <tr><td></td></tr>
 
-            <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{X['high_card'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{X['low_card'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited']}</font><b></td></tr>
+            <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{first_card.capitalize()}</font><b></td></tr>
+            <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{second_card.capitalize()}</font><b></td></tr>
+            <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited'].capitalize()}</font><b></td></tr>
             <tr><td><font size=4>Card Rank:</font></td><td><b><font size=4>{X['card_rank'].iloc[0]}</font><b></td></tr>
             <tr><td><font size=4>Limpers:</font></td><td><b><font size=4>{X['limpers'].iloc[0]}</font><b></td></tr>
             <tr><td><font size=4>Raises & Reraises:</font></td><td><b><font size=4>{X['raises&reraises'].iloc[0]}</font><b></td></tr>
@@ -116,9 +116,9 @@ def predict():
             <tr><td><font size=5>Input Data:</font></td><td></td></tr>
             <tr><td></td></tr>
 
-            <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{X['high_card'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{X['low_card'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited']}</font><b></td></tr>
+            <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{first_card.capitalize()}</font><b></td></tr>
+            <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{second_card.capitalize()}</font><b></td></tr>
+            <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited'].capitalize()}</font><b></td></tr>
             <tr><td><font size=4>Card Rank:</font></td><td><b><font size=4>{X['card_rank'].iloc[0]}</font><b></td></tr>
             <tr><td><font size=4>Limpers:</font></td><td><b><font size=4>{X['limpers'].iloc[0]}</font><b></td></tr>
             <tr><td><font size=4>Raises & Reraises:</font></td><td><b><font size=4>{X['raises&reraises'].iloc[0]}</font><b></td></tr>

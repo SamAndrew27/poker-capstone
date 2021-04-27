@@ -108,5 +108,5 @@ def read_in_holdout_Xy(subset=True):
 
 
 if __name__=="__main__":
-    X, y = read_in_return_Xy_no_unused()
+    X, y = training_data_Xy()
     print(X.info())

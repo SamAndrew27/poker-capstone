@@ -53,7 +53,7 @@ def read_in_training_return_Xy(remove_columns=True):
 
 
 
-def join_training_holdout(target=False):
+def join_training_holdout(target=False, remove_columns=True):
     X, y = read_in_training_return_Xy()
     X_hold, y_hold = read_in_holdout_return_X_y()
     X['made_or_lost'] = y

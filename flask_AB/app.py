@@ -23,11 +23,12 @@ app.secret_key = 'dev'
 def index():
     return render_template('index.html')
 
-@app.route('/save_percent', methods=['POST', 'GET'])
-def save_percent():
+@app.route('/save_percent_filename', methods=['POST', 'GET'])
+def save_percent_filename():
     
     session['percent_model'] = float(request.form['percent_predict']) / 100
     session['percent_non_model'] = 1 - session['percent_model']
+    session['filename'] = request.form['filename']
     starting_df = pd.DataFrame({'suited': [None], 
                         'low_card': [None],
                         'position': [None], 
@@ -42,10 +43,12 @@ def save_percent():
                         'end_stack': [None],
                         'model': [None],
                         'prediction': [None]})
-    starting_df.to_csv('results.csv')
+    starting_df.to_csv(f'hand_results/{session["filename"]}.csv')
     page = f'''
     <table>
         <tr><td><font size=6>Percent Chosen:</font></td><td><font size =6, color="black">{request.form['percent_predict']}%</font></td></tr> 
+
+        <tr><td><font size=6>Filename Chosen:</font></td><td><font size =6, color="black">{session['filename']}</font></td></tr> 
     <table>
     <form action='/input' method='POST' >        
         <button type='submit'>Start Predicting!</button>
@@ -95,10 +98,13 @@ def save_hand():
                         'model': [session['model']],
                         'prediction': [session['prediction']]})
     df = pd.concat([df, temp_df], ignore_index=True)
-    df.to_csv('results.csv')
+    df.to_csv(f'hand_results/{session["filename"]}.csv')
     page = f'''
     <form action='/input' method='POST' >        
         <button type='submit'>Make New Prediction!</button>
+    </form>
+    <form action='/' method='GET' >        
+        <button type='submit'>Change Percent A/B or Filename</button>
     </form>
     '''
     return page 
@@ -108,7 +114,7 @@ def save_hand():
 
 @app.route('/save_hand_null', methods=['POST'])
 def save_hand_null():
-    df = pd.read_csv('results.csv')
+    df = pd.read_csv(f'hand_results/{session["filename"]}.csv')
     df = df.drop(df.columns[0], axis=1)
     temp_df = pd.DataFrame({'suited': [session['suited']], 
                         'low_card': [session['low_card']],
@@ -125,21 +131,15 @@ def save_hand_null():
                         'model': [session['model']],
                         'prediction': [session['prediction']]})
     df = pd.concat([df, temp_df], ignore_index=True)
-    df.to_csv('results.csv')
+    df.to_csv(f'hand_results/{session["filename"]}.csv')
     page = f'''
     <form action='/input' method='POST' >        
         <button type='submit'>Make New Prediction!</button>
+    </form>
+    <form action='/' method='GET' >        
+        <button type='submit'>Change Percent A/B or Filename</button>
     </form>
     ''' 
-
-
-
-    session['df'] = pd.concat([session['df'], session['temp_df']], ignore_index=True)
-    page = f'''
-    <form action='/input' method='POST' >        
-        <button type='submit'>Make New Prediction!</button>
-    </form>
-    '''
     return page 
 
 
@@ -183,9 +183,9 @@ def predict():
 
         prediction = model.predict_proba(X)[0][1] # get prediction, below we are assigning result based on prediction proba
         if prediction >= 0.62:
-            result = 'Play That Hand!'
+            result = 'Play It!'
         if prediction < 0.62 and prediction > 0.53:
-            result = 'Caution Zone'
+            result = 'Caution'
         if prediction <= .53:
             result = "Don't Play It!"
 
@@ -281,13 +281,13 @@ def predict():
                 <tr><td><font size=4>BB in Stack:</font></td><td><b><font size=4>{round(X['BB_in_stack'].iloc[0], 2)}</font><b></td></tr>
             <table>
             <form action='/save_hand_null' method='POST' >        
-                <button type='submit'>Did Not Play Hand</button>
+                <button type='submit'>Continue</button>
             </form>
             '''
     else:
         page = f'''
         <table>
-            <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="red">Figure It Out Yourself Digus!</font></td></tr> 
+            <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="blue">Up to You</font></td></tr> 
             <tr><td></td></tr>
 
             <tr><td><font size=5>Input Data:</font></td><td></td></tr>

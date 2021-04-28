@@ -63,9 +63,11 @@
 
     </div><!-- /.container -->
 
-    <form action="/save_percent" method='POST' >
-                Enter what percent of hands you would like to be directed to the Model Prediction Page (as opposed to 'your choice'):<br/>
+    <form action="/save_percent_filename" method='POST' >
+                Enter percent of hands to be directed to model and filepath for results:<br/>
                 <input type="text" name="percent_predict"> %</input><br/>
+                <input type="text" name="filename"> file name </input><br/>
+
                 <input type="submit" />
     </form>
 

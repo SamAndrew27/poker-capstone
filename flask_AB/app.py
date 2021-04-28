@@ -187,7 +187,7 @@ def predict():
         if prediction < 0.62 and prediction > 0.53:
             result = 'Caution'
         if prediction <= .53:
-            result = "Don't Play It!"
+            result = "Don't Do It!"
 
     fork = np.random.choice(['model', 'non_model'], p=[session['percent_model'], session['percent_non_model']])
     session['suited'] = suited

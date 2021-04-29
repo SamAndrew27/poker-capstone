@@ -1,6 +1,6 @@
 # Predicting Poker Hand Outcomes
 
-![Hud Image](/images0/cap2_images/table.PNG)
+![Hud Image](/images/cap2_images/table.PNG)
 
 ## Goal
 
@@ -92,6 +92,7 @@ From this data I hoped to build a model to predict the outcome of any given hand
 * Position: this is my position at the table, as a fraction of the total players. In early position, you have to make your bet first, which generally puts you at a disadvantage relative to those who make their play after you. If I am in the dealer position, the latest possible position, the value for this feature is a 1. If I am in the small-blind, the earliest possible position, its value can be as low as 0.11.
 
 * Big Blinds in Stack: this is how much money I have, relative to the Big Blind. The Big Blind is the amount one player has to bet before any cards are dealt. It generally represents the minimum size of the bet as well. This ratio heavily dictates the strategy a poker player ought to follow in a tournament game.
+![BB in stack plot](/images/general-plots/bb_in_stack_all_data.PNG)
 
 * Suited: whether the two cards in my hand were of the same suit, represented by a boolean value of 1 for suited and 0 for unsuited. Having two cards of the same suit makes it easier to make flushes, one of the better possible Texas Hold’em hands.  
 
@@ -100,20 +101,22 @@ From this data I hoped to build a model to predict the outcome of any given hand
 * High Card: the highest card in my hand, represented by an integer value, the same as “Low Card.” In the case that the high card is equal to the low card (i.e. a pocket pair) they will both have the same value.
 
 * Card Rank: using a formula created by Bill Chen, a professional poker player with a degree in mathematics, I wanted to create a value to represent the strength of my hand. These values range from -1 for 7-2, the worst possible hand, to 20 for pocket aces, the strongest possible hand.
+![Card Rank](/images/general-plots/card_rank_all_data.PNG)
 
 * Limpers: If a poker player puts in the minimum amount required to continue playing their hand their action is known as a “limp.” There are different theories about how often a poker player ought to do this. It was previously believed that limping is a hallmark of a weak poker player, and that good poker players nearly always raised when they planned on playing a hand. Solvers have changed the thinking about limping to some degree, especially for tournament poker. There are situations when it is correct to limp, but it is still usually done by weak poker players at a higher frequency. This feature is an integer value representing the number of limps that occurred prior to my decision point, and for my dataset these values range from 0 to 6.
 
 * Raises & Re-raises: When a player puts in more than the required amount this is known as a raise. A re-raise is when a subsequent player repeats this process. A raise, and especially a re-raise, is a sign of strength. This feature represents the number of raises and re-raises that have occurred prior to the action coming to me. For my dataset these values ranged from 0 to 3. 
+![raises&reraises](/images/general-plots/raises_all_data.PNG)
 
 * Number of Players Before: This feature denotes the number of players who have entered the hand. It will never be smaller than the sum of limpers and raises/reraises, as all those players have entered the hand. It may also include players who just called (put in the minimum) after a raise or re-raise was made. It is an integer value that ranges from 0 to 6 for my dataset. The preferred size of this number varies according to table conditions. If you have a very strong hand you might be happy to see that a lot of players have put in money, but with more marginal holdings you may prefer to fight for the pot amongst a smaller subset of players;
+![num_players_before](/images/general-plots/number_of_players_all_data.PNG)
 
 * Number of Players After: This feature represents the number of players yet to make their first action. It is an integer value, and its value ranges from 0 to 8. You usually prefer to see a lower number here, but confounding variables make it tricky to say outright that a lower number is preferable. 
 
-
-
 * Made or Lost Money: My target variable. It is a boolean value, with the positive class representing situations in which I made money or broke even and the negative class representing situations in which I lost money.
+![Won vs Lost](/images/general-plots/won_v_lost_all_data.PNG)
 
-* Outcome relative to start was my target variable for regression. It is the amount I won or lost with respect to my starting stack, as a float. A value of 0 means that I lost all my chips, and values between 0 and 1 mean that I lost some of my starting chips. For example, if I had 100 chips, and this value is 0.95, that would mean I lost 5 chips. Values greater than 1 mean that I won some amount of money. It's possible that these values could be as high as 9, but in practice are rarely higher than 2 or 3. When I switched to classification models, I converted it into a boolean, 0 for lost money, and 1 for made money or broke even. 
+
 
 
 ## Expectations & Modeling Goals
@@ -123,7 +126,7 @@ Before I discuss modeling, it should be noted that there is much variance intrin
 This same sort of variation is also present on a hand-to-hand basis. The best possible hand, pocket aces, will beat the worst hand, 7-2 offsuit, around 87% of the time. This means that the question of whether I should play a poker hand is not the same as whether I will win a hand. Therefore my model can only hope to be a suggestion, and will not be able to perfectly predict whether or not I will win money. 
 
 
-![Aces](/images/aces.png)
+![Aces](/images/cap2_images/aces.png)
 
 My model is built exclusively from the hands that I did play. It is possible that there are many hands that I should have, but did not play. I will not be able to answer this question unless I start playing all the hands I am dealt, which is certainly not an ideal strategy. There are many different ways to improve at poker, but my model hopes to answer one very specific and important question: given the manner in which I have historically played and given the conditions when cards are first dealt will I most likely win or lose money by playing any given poker hand. 
 
@@ -154,6 +157,7 @@ I hope that having these different categories can help inform me which hands to 
 The model I created will hopefully push me in the direction of becoming a better poker player. While it is far from a perfect predictor, I can use it in situations where I feel that the expected value of playing a hand is close to that of folding it. In Data Science terms, I will continue to be the primary predictive model at the poker table, but my Gradient Boosting model can serve as a secondary model that informs my decision making process. 
 
 I also hope to be able to analyze Partial Dependence plots to help identify leaks in game. I have not yet done much serious analysis of these,  but one initial takeaway is that I tend to perform much worse when I have more big blinds in my stack. Given what I know about my playing style, this means that I am probably playing too passively when this is the case. 
+![results](/images/general-plots/holdout_results_caution.png)
 
 ## Flask App
 Having created my model, I wanted to package it in a format where I could feed it information and quickly get results so that I could use it while actually playing. To do this I used Flask to build a basic web page. It has the user (most likely me) plug in a number of details about their  current situation. These are then read into a Pandas DataFrame, upon which my model then performs a prediction.

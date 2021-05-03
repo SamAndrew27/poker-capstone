@@ -6,7 +6,7 @@ from load_df import load_whole
 plt.style.use('ggplot')
 
 _, _, df= load_whole()
-# tabling this stuff, maybe return once you have the other plots in your slides
+# TABLING this stuff, maybe return once you have the other plots in your slides
 
 
 

@@ -9,6 +9,8 @@ plt.style.use('ggplot')
 plt.rcParams.update({'font.size': 15})
 
 
+# TABLING THIS FOR NOW!!!
+
 ''' MAYBE RETURN TO THIS???
 def feature_importance(model, X, y):
     cols = list(X.columns)

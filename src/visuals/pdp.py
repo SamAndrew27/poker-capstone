@@ -22,6 +22,17 @@ X.columns = ['Suited', # 0
 
 
 def partial_plot(X, y, model, feature_to_plot, title = 'Default', save=False, plot_file='Default'):
+    """creates pdp plot for a single feature
+
+    Args:
+        X (array): features
+        y (array): targets
+        model: sklearn model to be used
+        feature_to_plot (int): feature to plot (see columns of X to determine number)
+        title (str, optional): title used in plot. Defaults to 'Default'.
+        save (bool, optional): Whether to save the plot. If False plot is displayed rather than saved. Defaults to False.
+        plot_file (str, optional): name of file. Defaults to 'Default'. Only applicable if 'save' is set to True
+    """    
     model.fit(X, y)
 
     fig, ax = plt.subplots(figsize=(12,12))
@@ -35,6 +46,17 @@ def partial_plot(X, y, model, feature_to_plot, title = 'Default', save=False, pl
         plt.show()
 
 def partial_plot_multiple(X, y, model, features_to_plot, title='Default', save=False, plot_file = 'Default'):
+    """creates pdp plot for 2 features
+
+    Args:
+        X (array): features
+        y (array): targets
+        model: sklearn model to be used
+        feature_to_plots (list): features to plot (see columns of X to determine number)
+        title (str, optional): title used in plot. Defaults to 'Default'.
+        save (bool, optional): Whether to save the plot. If False plot is displayed rather than saved. Defaults to False.
+        plot_file (str, optional): name of file. Defaults to 'Default'. Only applicable if 'save' is set to True
+    """    
     model.fit(X, y)
 
     fig, ax = plt.subplots(figsize=(12,12))

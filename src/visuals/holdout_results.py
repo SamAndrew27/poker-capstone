@@ -1,13 +1,24 @@
-import seaborn as sns 
 import matplotlib.pyplot as plt 
 import numpy as np
 import pandas as pd
-from load_df import read_in_holdout_return_X_y, read_in_training_return_Xy
 from sklearn.ensemble import GradientBoostingClassifier
+
+from load_df import read_in_holdout_return_X_y, read_in_training_return_Xy
+
 plt.style.use('ggplot')
 plt.rcParams.update({'font.size': 20})
 
 def get_results(lower, upper):
+    """Fits model with training data, predicts on holdout data. 
+    Puts predictions/truth into dataframe. Changes predictions to 0 if they are above upper threshold, 1 if they are middle, and 2 if they are lower than 'lower'
+
+    Args:
+        lower (float): lowest threshold, everything below this always predicted as false
+        upper (float): upper threshold, everything above this always predicted as positive
+
+    Returns:
+        2 arrays: one containing all the cases where I won/broke even and the other containing all cases where I lost
+    """    
     X, y = read_in_training_return_Xy()
     X_holdout, y_holdout = read_in_holdout_return_X_y()
 
@@ -24,17 +35,18 @@ def get_results(lower, upper):
 
     return won, lost
 
-# def bin_predictions(x):
-#     if x >= .655:
-#         return 'Play It!'
-#     if x < .65 and x > .595:
-#         return 'Probably Win'
-#     if x <= .595 and x > .51:
-#         return 'Caution Zone'
-#     if x <= .51:
-#         return "Don't Do It!"
 
 def bin_predictions(x, lower, upper):
+    """categorizes predictions by thresholding prediction probas
+
+    Args:
+        x (prediction): float (predicted probability positive)
+        lower (float): lower threshold, see 'get_results'
+        upper (float): upper threshold, see 'get_results'
+
+    Returns:
+        [int]: 0 if above highest thresh, 1 if in middle, and 2 if below lower threshold 
+    """    
     if x >= upper:
         return 0
     if x < upper and x > lower:
@@ -42,58 +54,17 @@ def bin_predictions(x, lower, upper):
     if x <= lower:
         return 2
 
-def plot_results(lower,upper):
-    won, lost = get_results(lower,upper)
-    won = won.prediction_category.value_counts().sort_index()
-    lost = lost.prediction_category.value_counts().sort_index()
-
-    won_percent = won / (won+lost)
-    lost_percent = lost / (won+lost)
-
-    q3_won = round(100 * won_percent[3], 1)
-    q3_lost = round(100 * lost_percent[3], 1)  
-    q2_won = round(100 * won_percent[2], 1)
-    q2_lost = round(100 * lost_percent[2], 1)
-    q1_won = round(100 * won_percent[1], 1)
-    q1_lost = round(100 * lost_percent[1], 1)
-    q0_won = round(100 * won_percent[0], 1)
-    q0_lost = round(100 * lost_percent[0], 1)
-
-    labels = ['Play It!', 'Probable Win', "Caution Zone", "Don't Do It!", ]
-
-
-
-
-    fig, ax = plt.subplots(figsize=(20,20))
-
-    width = 0.35
-    x = np.arange(len(labels))
-    won_ax = ax.bar(x=x - width/2, height= won, width=width, label="Won/Broke Even")
-    lost_ax = ax.bar(x=x + width/2, height= lost, width=width, label="Lost")
-    ax.set_ylabel('Number of Hands')
-    ax.set_title('Number of Hands Won or Lost \n in Each Grouping')
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels)
-    ax.legend()
-
-    plt.text(x= .06, y = 40, s=f'{q0_lost}%', fontsize=20)
-    plt.text(x= -.3, y = 40, s=f'{q0_won}%', fontsize=20)
-
-    plt.text(x= 1.05, y = 40, s=f'{q1_lost}%', fontsize=20)
-    plt.text(x= .7, y = 40, s=f'{q1_won}%', fontsize=20)
-
-    plt.text(x= 2.05, y = 40, s=f'{q2_lost}%', fontsize=20)
-    plt.text(x= 1.7, y = 40, s=f'{q2_won}%', fontsize=20)
-
-    plt.text(x= 3.05, y = 40, s=f'{q3_lost}%', fontsize=20)
-    plt.text(x= 2.7, y = 40, s=f'{q3_won}%', fontsize=20)
-
-    return ax 
-
-
-
 
 def plot_results_3_categories(lower,upper):
+    """plots results for 3 different categores (number won, number lost, percent of each)
+
+    Args:
+        lower (float): lower threshold, see 'get_results'
+        upper (float): upper threshold, see 'get_results'
+
+    Returns:
+        ax: matplotlib ax containing plot 
+    """    
     won, lost = get_results(lower,upper)
     won = won.prediction_category.value_counts().sort_index()
     lost = lost.prediction_category.value_counts().sort_index()

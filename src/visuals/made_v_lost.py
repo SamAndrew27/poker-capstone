@@ -8,6 +8,11 @@ plt.style.use('ggplot')
 plt.rcParams.update({'font.size': 20})
 
 def plot_made_v_lost():
+    """plots 2 bars, won and lost. adds percent of each to bar
+
+    Returns:
+        ax: matplotlib ax with plot 
+    """    
     won, lost, df = split_won_lost()
     won_percent = round(100 * len(won) / len(df),1)
     lost_percent = round(100 * len(lost) / len(df),1)

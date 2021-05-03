@@ -10,6 +10,14 @@ model = GradientBoostingClassifier(learning_rate=.01, n_estimators=90, min_sampl
 X, y = read_in_training_return_Xy()
 
 def plot_roc_non_thresh(model, X, y, savefig=False):
+    """Plots roc_curve for data
+
+    Args:
+        model: model to be used to determine roc
+        X (array): features
+        y (array): target
+        savefig (bool, optional): If True saves figure, otherwise displays figure. Defaults to False.
+    """    
 
     model.fit(X,y)
     plot_roc_curve(model, X, y)

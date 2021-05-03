@@ -1,41 +1,23 @@
-import seaborn as sns 
 import matplotlib.pyplot as plt 
 import numpy as np
 import pandas as pd
-plt.style.use('ggplot')
+
 from load_df import won_lost_for_BB
+
+plt.style.use('ggplot')
 plt.rcParams.update({'font.size': 20})
 
-# def plot_bb():
-#     _, _,df = load_whole()
-#     fig, ax = plt.subplots()
-#     ax = sns.kdeplot(data=df, x='BB_in_stack', hue='made_or_lost', fill=True)
-#     # ax.set(xlim=(0,100))
-#     ax.legend(['won','lost'])
-#     return ax 
-
-
-# maybe cut these off at 100 instead of 200?
-def bb_plot_sns(rounded = None, cutoff=200):
-    _, _, df = won_lost_for_BB(rounded, cutoff)
-
-    fig, ax = plt.subplots()
-
-
-
-    ax = sns.histplot(data=df, x='BB_in_stack', hue='made_or_lost', multiple='dodge', element='step')
-    return ax 
-
-def bb_violin(rounded=None, cutoff=200):
-    _, _, df = won_lost_for_BB(rounded, cutoff)
-
-    fig, ax = plt.subplots()
-
-    ax = sns.violinplot(data=df, x='made_or_lost', y='BB_in_stack')
-
-    return ax 
 
 def bb_bar(rounded=5, cutoff=120):
+    """creates bar plot for BB_in_stack. 
+
+    Args:
+        rounded (int, optional): Number to round BB_in_stack values to. Defaults to 5.
+        cutoff (int, optional): Highest value of BB_in_stack considered for plotting. Defaults to 120.
+
+    Returns:
+        ax: matplotlib ax containing plot 
+    """    
     won, lost, df = won_lost_for_BB(rounded, cutoff)
     labels = sorted(list(df['BB_in_stack'].unique()))
 
@@ -58,19 +40,8 @@ def bb_bar(rounded=5, cutoff=120):
 
 
 if __name__ == "__main__":
-    # ax1 = bb_plot_sns(rounded = 5, cutoff=100)
 
-
-    # ax2 = bb_plot_sns(rounded = 1, cutoff=100) # CONSIDER USING THIS ONE
-    
-    
-    # ax3 = bb_plot_sns(rounded = 10, cutoff=100)
-    # ax4 = bb_plot_sns(rounded = 5, cutoff=200)
-    # ax5 = bb_violin(cutoff=200)
-    # ax6 = bb_violin(cutoff=100)
 
     ax7 = bb_bar(rounded=5, cutoff=100)
-    # ax8 = bb_bar(rounded=10, cutoff=150)
-    # ax9 = bb_bar(rounded=10, cutoff=100)
 
     plt.show()

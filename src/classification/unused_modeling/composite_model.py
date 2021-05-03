@@ -1,11 +1,12 @@
-from grid_and_thresh_funcs import grid_search
-from data_prep import training_data_Xy
+import numpy as np 
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import f1_score
-import numpy as np 
-import pandas as pd
+
+from grid_and_thresh_funcs import grid_search
+from data_prep import training_data_Xy
 
 X, y = training_data_Xy(scale=True)
 
@@ -14,7 +15,7 @@ def model_eval(X, y, composite=True):
 
     Args:
         X (array): features
-        y ([array]): target
+        y (array): target
         composite (bool, optional): composite vs gradient boost. if true composite. Defaults to True.
 
     Returns:

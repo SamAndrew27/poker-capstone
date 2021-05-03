@@ -2,46 +2,52 @@ import pandas as pd
 
 
 def fill_HH_columns(df):
-    df['buyin'] = df['HandHistory'].apply(lambda row: buyin(row)) 
+    """takes in dataframe and uses HandHistory column to create the below features
 
-    df['cash_or_tourn'] = df['HandHistory'].apply(lambda x: gametype(x)) # to discern between cash & tournaments
+    Args:
+        df (DataFrame): Dataframe created using SQL DriveHud backup
 
-    df['my_blind_anti_total'] = df['HandHistory'].apply(lambda x: my_blind_anti_total(x)) # how much I put in as default (blind(/anti))
+    Returns:
+        DataFrame: same as dataframe input with additional columns 
+    """    
+    df['buyin'] = df['HandHistory'].apply(lambda hh: buyin(hh)) 
 
-    #df['the_deck'] = df['HandHistory'].apply(lambda row: possible_cards(row)) # retiring this function, could probably be removed entirely 
+    df['cash_or_tourn'] = df['HandHistory'].apply(lambda hh: gametype(hh)) # to discern between cash & tournaments
 
-    df['my_cards'] = df['HandHistory'].apply(lambda x: hole_cards(x)) # my cards 
+    df['my_blind_anti_total'] = df['HandHistory'].apply(lambda hh: my_blind_anti_total(hh)) # how much I put in as default (blind(/anti))
+
+    df['my_cards'] = df['HandHistory'].apply(lambda hh: hole_cards(hh)) # my cards 
     
-    df['starting_stack'] = df['HandHistory'].apply(lambda row: start_stack(row))
+    df['starting_stack'] = df['HandHistory'].apply(lambda hh: start_stack(hh))
     
-    df['tournament_type'] = df['HandHistory'].apply(lambda row: tournament_type(row))
+    df['tournament_type'] = df['HandHistory'].apply(lambda hh: tournament_type(hh))
 
-    df['won'] = df['HandHistory'].apply(lambda row: won(row))
+    df['won'] = df['HandHistory'].apply(lambda hh: won(hh))
 
-    df['bet'] = df['HandHistory'].apply(lambda row: bet(row))
+    df['bet'] = df['HandHistory'].apply(lambda hh: bet(hh))
 
-    df['total_players'] = df['HandHistory'].apply(lambda x: total_players(x))
+    df['total_players'] = df['HandHistory'].apply(lambda hh: total_players(hh))
 
-    df['position'] = df['HandHistory'].apply(lambda x: position(x))
+    df['position'] = df['HandHistory'].apply(lambda hh: position(hh))
 
-    df['table_max_players'] = df['HandHistory'].apply(lambda x: table_max(x))
+    df['table_max_players'] = df['HandHistory'].apply(lambda hh: table_max(hh))
 
     # pretty sure this requires edits for edge case, refer to function below
-    df['bets_before_my_preflop_action'] = df.HandHistory.apply(lambda x: bets_before_my_preflop_action(x))
+    df['bets_before_my_preflop_action'] = df.HandHistory.apply(lambda hh: bets_before_my_preflop_action(hh))
 
-    df['action_type'] = df['HandHistory'].apply(lambda x: action_type(x))
+    df['action_type'] = df['HandHistory'].apply(lambda hh: action_type(hh))
 
-    df['player_names'] = df['HandHistory'].apply(lambda x: player_names(x)) # for use by other functions 
+    df['player_names'] = df['HandHistory'].apply(lambda hh: player_names(hh)) # for use by other functions 
 
-    df['players_acting_before_me'] = df['HandHistory'].apply(lambda x: players_before(x)) # does not include players who folded 
+    df['players_acting_before_me'] = df['HandHistory'].apply(lambda hh: players_before(hh)) # does not include players who folded 
 
-    df['players_acting_after_me'] = df['HandHistory'].apply(lambda x: players_after(x)) # this might not account for cases where action was folded leading to some players never making an action. If we end up using data for hands where some players did not have to act we will have to develop a more robust function
+    df['players_acting_after_me'] = df['HandHistory'].apply(lambda hh: players_after(hh)) # this might not account for cases where action was folded leading to some players never making an action. If we end up using data for hands where some players did not have to act we will have to develop a more robust function
 
-    df['limpers'] = df['HandHistory'].apply(lambda x: limpers(x))
+    df['limpers'] = df['HandHistory'].apply(lambda hh: limpers(hh))
 
-    df['raises&reraises'] = df['HandHistory'].apply(lambda x: raises_and_reraises(x))
+    df['raises&reraises'] = df['HandHistory'].apply(lambda hh: raises_and_reraises(hh))
 
-    df['callers'] = df['HandHistory'].apply(lambda x: callers(x))
+    df['callers'] = df['HandHistory'].apply(lambda hh: callers(hh))
 
     return df
 
@@ -51,16 +57,16 @@ def fill_HH_columns(df):
 
 # functions that do these processes 
 
-def buyin(x): 
+def buyin(hh): 
     """gets buy-in of the tournament, fairly certain cash games still have some sort of value here? 
 
     Args:
-        handhistory: string data of hands
+        hh: 'HandHistory' column, string data of hands 
 
     Returns:
         float: buy-in of tournament
     """    
-    for elem in x:
+    for elem in hh:
         if 'totalbuyin' in elem:
             temp = elem 
             temp = temp.replace('<totalbuyin>$', '')
@@ -68,17 +74,17 @@ def buyin(x):
             return float(temp)
 
 
-def gametype(x):
-    """gets gametype of tournament
+def gametype(hh):
+    """gets gametype of tournament - used to get 'cash_or_tourn', which may be a misleading name 
 
     Args:
-        handhistory: list string data of hand
+        hh: 'HandHistory' column, list string data of hand
 
     Returns:
         string: type of game
     """    
     temp = None
-    for elem in x:
+    for elem in hh:
         if 'gametype' in elem:
             temp = elem.replace('<gametype>', '').replace('</gametype>', '').strip()
             break
@@ -87,11 +93,11 @@ def gametype(x):
 
 
 
-def hole_cards(x):
+def hole_cards(hh):
     """finds the cards I hold, saves the 2 values in their present form to a list
 
     Args:
-        handhistory: string data of hands
+        hh: 'HandHistory' column, string data of hands
 
     Returns:
         list: 2 cards I held, Suit:Face Value format
@@ -99,7 +105,7 @@ def hole_cards(x):
 
     c1 = ''
     c2 = ''
-    for elem in x:
+    for elem in hh:
         if 'Pocket' in elem and 'Hero' in elem: # looks for string where my cards are listed
             temp = elem.split(' ') # split and iterate through that string
             for s in temp:
@@ -116,11 +122,11 @@ def hole_cards(x):
         return None
 
 
-def start_stack(x): 
+def start_stack(hh): 
     """Finds amount of chips I started hand with
 
     Args:
-        handhistory: string data of hands
+        hh: 'HandHistory' column, string data of hands
 
     Returns:
         float: number of chips
@@ -128,7 +134,7 @@ def start_stack(x):
 
     result = None
     temp = ''
-    for elem in x:
+    for elem in hh:
         if 'Hero' in elem and 'addon' in elem:
             temp = elem
     
@@ -141,12 +147,12 @@ def start_stack(x):
                 result = float(result)
     return result 
 
-# probably not going to be used, but may be useful so leaving for now
-def tournament_type(x):
-    """gets type of tournament 
+def tournament_type(hh):
+    """gets type of tournament
+
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
         string: tournament type
@@ -154,7 +160,7 @@ def tournament_type(x):
     result = ''
     cut = 0
     counter = 0
-    for elem in x:
+    for elem in hh:
         if '<tournamentname>' in elem: # doing some string wrangling below to get just the name of the tournament
             temp = elem
             cut = temp.count('(') 
@@ -175,11 +181,11 @@ def tournament_type(x):
         result = 'Jackpot Sit & Go $0.50'
     return result 
 
-def won(x):
+def won(hh):
     """How much I won in the hand
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
         float: amount won
@@ -188,7 +194,7 @@ def won(x):
     won = ''
     temp = ''
     result = 0
-    for elem in x:
+    for elem in hh:
         if 'Hero' in elem and 'addon' in elem:
             temp = elem
     
@@ -202,11 +208,11 @@ def won(x):
     return result 
 
 
-def bet(x):
+def bet(hh):
     """finds amount I bet in the hand 
 
     Args:
-        handhistory: string data of hands
+        hh: 'HandHistory' column, string data of hands
 
     Returns:
         float: amount bet
@@ -215,7 +221,7 @@ def bet(x):
     bet = ''
     temp = ''
     result = None
-    for elem in x:
+    for elem in hh:
         if 'Hero' in elem and 'addon' in elem:
             temp = elem
     
@@ -227,28 +233,28 @@ def bet(x):
                 result = float(bet)
     return result 
 
-def total_players(x):
+def total_players(hh):
     """finds number of total players at table
 
     Args:
-        handhistory: string data of hands
+        hh: 'HandHistory' column, string data of hands
 
     Returns:
         int: total number of players (2-9 should be possible values)
     """
 
     count = 0
-    for elem in x:
+    for elem in hh:
         if 'Pocket' in elem:
             count += 1
     return count 
 
 
-def position(x):
+def position(hh):
     """Finds where I was seated 
 
     Args:
-        handhistory: string data of hands
+        hh: 'HandHistory' column, string data of hands
 
     Returns:
         float: My position where 1 is the earliest seat and the total number of players would be equal to the last seat
@@ -263,7 +269,7 @@ def position(x):
     result = None 
     hero_pos = 0
     SB = ''
-    for elem in x: # find all initial seatings
+    for elem in hh: # find all initial seatings
         if 'dealer' in elem:
             pos_lst.append(elem)
 
@@ -275,7 +281,7 @@ def position(x):
             break
         
     if dealer_exists == False:
-        for elem in x:
+        for elem in hh:
             if 'type="1"' in elem and '[cards]' in elem:# finds SB
                 for sub_string in elem.split(): # iterates through SB to find player name
                     if 'player=' in sub_string:
@@ -326,17 +332,17 @@ def position(x):
     return result
 
     
-def table_max(x):
+def table_max(hh):
     """max number of seats at the table, always greater or equal to number of players at table
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
         int: max players
     """
     result = None
-    for elem in x:
+    for elem in hh:
         if 'maxplayers' in elem:
             result = int(elem.replace('<maxplayers>', '').replace('</maxplayers>',''))
             break
@@ -344,18 +350,18 @@ def table_max(x):
 
 
 
-def my_blind_anti_total(x):
+def my_blind_anti_total(hh):
     """Finds how much I put in in blinds/anti
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
         float: amount blinded or antied 
     """
     action_list = []
     result = 0
-    for elem in x:
+    for elem in hh:
         if '[cards]' in elem and 'Hero' in elem:
             action_list.append(elem)
     for elem in action_list:
@@ -366,11 +372,11 @@ def my_blind_anti_total(x):
 
 
 
-def bets_before_my_preflop_action(x):
-    """Finds amount bet prior to my preflop action
+def bets_before_my_preflop_action(hh):
+    """Finds amount bet prior to my preflop action (total sum of)
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
         float: amount opponents bet before my action
@@ -380,14 +386,14 @@ def bets_before_my_preflop_action(x):
     stop = 0
     total=0
     subset = []
-    for idx, elem in enumerate(x): # find beginning/end of preflop action
+    for idx, elem in enumerate(hh): # find beginning/end of preflop action
         if 'Pocket' in elem:
             start = idx
         if '<round no="2">' in elem: # WILL probably have to change this for instances when there was no round2
-
             stop = idx
+            break 
     if stop != 0:
-        subset = x[start+1:stop-1] 
+        subset = hh[start+1:stop-1] 
         for idx, elem in enumerate(subset): # iterates through subset to find my first action 
             if 'Hero' in elem:
                 subset = subset[:idx]
@@ -400,14 +406,14 @@ def bets_before_my_preflop_action(x):
     return total
         
 
-def action_type(x):
-    """types of actions a player made preflop 
+def action_type(hh):
+    """types of actions a player made preflop, 
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
-        dictionary: dictionary with the actions all players took according to types as determined by DriveHud
+        dictionary: dictionary with the actions all players took in hand according to types as determined by DriveHud
     """    
 
 
@@ -416,10 +422,10 @@ def action_type(x):
     stop = 0
     player = None
     action_type = None 
-    for idx, elem in enumerate(x): # finds start of preflop action 
+    for idx, elem in enumerate(hh): # finds start of preflop action 
         if 'Pocket' in elem:
             start = idx
-    subset = x[start+1:]
+    subset = hh[start+1:]
     for idx, elem in enumerate(subset):# finds end of preflop action
         if '</round>' in elem:
             stop = idx
@@ -440,18 +446,18 @@ def action_type(x):
 
 
 
-def player_names(x):
+def player_names(hh):
     """gets names of all the players in hand
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
         list: all of the players in hand as string values
     """    
     player = None
     result = []
-    for elem in x:
+    for elem in hh:
         if 'dealer' in elem: 
             for sub_elem in elem.split(): # finds lines where player names are specified 
                 if 'name' in sub_elem:
@@ -461,11 +467,11 @@ def player_names(x):
     return result 
 
 
-def players_before(x):
-    """ finds all players having entered hand before my action
+def players_before(hh):
+    """ finds all players having entered hand before my action (acted but didn't fold)
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
         list: string values of all players having entered hand before my first action
@@ -473,10 +479,10 @@ def players_before(x):
     start = 0
     stop = 0
     players_before = [] # list of players before
-    for idx, elem in enumerate(x): # list of players after 
+    for idx, elem in enumerate(hh): # list of players after 
         if 'Pocket' in elem:
             start = idx
-    subset = x[start+1:] # subset containing preflop action until end
+    subset = hh[start+1:] # subset containing preflop action until end
     for idx, elem in enumerate(subset):
         if '</round>' in elem:
             stop = idx
@@ -496,11 +502,11 @@ def players_before(x):
                 players_before.append(player_name)
     return players_before
 
-def players_after(x):
-    """finds players acting after me in hand
+def players_after(hh):
+    """finds players acting after me in hand (discludes players who have already made 1st action)
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
         set: all the players acting after me 
@@ -510,10 +516,10 @@ def players_after(x):
     hero_found = False
     players_before = set() # set of players before
     players_after = set() # set of players after 
-    for idx, elem in enumerate(x): 
+    for idx, elem in enumerate(hh): 
         if 'Pocket' in elem:
             start = idx
-    subset = x[start+1:] # subset containing preflop action until end
+    subset = hh[start+1:] # subset containing preflop action until end
     for idx, elem in enumerate(subset):
         if '</round>' in elem:
             stop = idx
@@ -537,20 +543,20 @@ def players_after(x):
 
     return players_after
 
-def limpers(x):
-    """counts number of limpers
+def limpers(hh):
+    """counts number of limpers prior to my first action 
 
     Args:
-        handhistory: string data of hands
+        handhistory:'HandHistory' column,  string data of hands
 
     Returns:
         int: number of players having limped
     """    
     count = 0
-    for idx, elem in enumerate(x): 
+    for idx, elem in enumerate(hh): 
         if 'Pocket' in elem:
             start = idx
-    subset = x[start+1:] # subset containing preflop action until end
+    subset = hh[start+1:] # subset containing preflop action until end
     for idx, elem in enumerate(subset):
         if '</round>' in elem:
             stop = idx
@@ -564,11 +570,11 @@ def limpers(x):
                 count += 1
     return count 
 
-def raises_and_reraises(x): # pretty sure this works but consider checking to make sure 
+def raises_and_reraises(hh): # pretty sure this works but consider checking to make sure 
     """returns 1 if there was a raise, and 1 + n for ever n reraise after
 
     Args:
-        x: hand history from apply function above - string data of hands
+        hh:'HandHistory' column,  hand history from apply function above - string data of hands
 
     Returns:
         int: number of raises and reraises that occured prior to my first action 
@@ -576,7 +582,7 @@ def raises_and_reraises(x): # pretty sure this works but consider checking to ma
     bet = 0
     player_name = 0
     player_amount_bet = {} # store amount bet to delineate shoves from calls (all shoves are shoves but some are raises and some are calls)       
-    for elem in x: # getting amount blinded/antied prior to betting
+    for elem in hh: # getting amount blinded/antied prior to betting
         if '[cards]' in elem and ('type="1"' in elem or 'type="2"' in elem): # ignores antis  
             for sub_string in elem.split():
                 if 'player' in sub_string: # get player name
@@ -585,10 +591,10 @@ def raises_and_reraises(x): # pretty sure this works but consider checking to ma
                     bet = float(sub_string.replace('sum="', '').replace('"', '')) 
                 player_amount_bet[player_name] = bet # add player name as key and bet as value to dictionary
                             
-    for idx, elem in enumerate(x): # find beginning of pre-flop action
+    for idx, elem in enumerate(hh): # find beginning of pre-flop action
         if 'Pocket' in elem:
             start = idx
-    subset = x[start+1:] # subset containing preflop action until end
+    subset = hh[start+1:] # subset containing preflop action until end
     for idx, elem in enumerate(subset): # find end of preflop action
         if '</round>' in elem:
             stop = idx
@@ -615,11 +621,11 @@ def raises_and_reraises(x): # pretty sure this works but consider checking to ma
                     player_amount_bet[player_name] = bet
     return count 
 
-def callers(x): # pretty sure this works but consider checking to make sure 
-    """number of players to have made a call PROBABLY COULD USE ADDITIONAL CLEANUP
+def callers(hh): # pretty sure this works but consider checking to make sure 
+    """number of players to have made a call - PROBABLY COULD USE ADDITIONAL CLEANUP
 
     Args:
-        handhistory: string data of hands
+        hh:'HandHistory' column,  string data of hands
 
     Returns:
         int: number of callers, only non-0 when there has been a raise and a subsuquent call 
@@ -627,7 +633,7 @@ def callers(x): # pretty sure this works but consider checking to make sure
     bet = 0
     player_name = 0
     player_amount_bet = {} # store amount bet to delineate shoves from calls (all shoves are shoves but some are raises and some are calls)       
-    for elem in x: # getting amount put in prior to betting
+    for elem in hh: # getting amount put in prior to betting
         if '[cards]' in elem and ('type="1"' in elem or 'type="2"' in elem): # ignores antis  
             for sub_string in elem.split():
                 if 'player' in sub_string:
@@ -636,10 +642,10 @@ def callers(x): # pretty sure this works but consider checking to make sure
                     bet = float(sub_string.replace('sum="', '').replace('"', '')) 
                 player_amount_bet[player_name] = bet
                             
-    for idx, elem in enumerate(x): 
+    for idx, elem in enumerate(hh): 
         if 'Pocket' in elem:
             start = idx
-    subset = x[start+1:] # subset containing preflop action until end
+    subset = hh[start+1:] # subset containing preflop action until end
     for idx, elem in enumerate(subset):
         if '</round>' in elem:
             stop = idx
@@ -680,12 +686,3 @@ def callers(x): # pretty sure this works but consider checking to make sure
             player_amount_bet[player_name] += bet
     return count 
 
-
-# almost certainly won't use this, application too difficult for scope of this week 
-# def possible_cards(x): # will do this first, and then remove cards in seperate functions, still not sure how to deal with all in vs seeing later action
-#     deck = []
-#     for s in ['D', 'S', 'C', 'H']:
-#         for c in ['2','3','4', '5', '6', '7', '8', '9', '1', 'J', 'Q', 'K', 'A']: # making 10 just 1 for consistency sake
-#             temp = s + c
-#             deck.append(temp)
-#     return deck 

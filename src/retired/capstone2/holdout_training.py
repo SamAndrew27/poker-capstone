@@ -1,7 +1,7 @@
-import numpy as np 
 import pandas as pd
 from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from sklearn.preprocessing import StandardScaler
+import numpy as np 
 
 # splits tournaments from cash game (these functions unecessary now? our 'prior actions' function removes cash games ??? double check this)
 def get_tournaments(df):
@@ -44,14 +44,52 @@ def put_in_money(df): # seperates tournaments where I put in $ versus tournaeent
 
 
 
+# includes removing columns used in the creation of other columns
+# just removing everything that couldn't potentially be used for model building
+# removing both gametypes... OOPS (one is the one i created, useful for delineating cash from tournaments)
+# BUT CONSIDER LOOKING AT THE ONE THEY CREATED! and naming the one I created something else 
+# will create smaller columns as necessary 
+def remove_unused_columns(df, drop = False):
+    """removes unused columns - pretty sure this is something I used for regression, could probably retire
 
-def holdout_training_classification(df, filename='default'): 
+    Args:
+        df (DataFrame): Entire DataFrame
+        drop (bool, optional): If True drop first column. May be useful if data is coming directly from CSV. Defaults to False.
+
+    Returns:
+        DataFrame: only relevant columns included
+    """    
+    if drop:
+        df = df.drop(df.columns[0], axis = 1)
+
+    result = df[['buyin','won', 'bet','made_money','BB', 'BB_in_stack','starting_stack','total_players','table_max_players', 'position', 
+        'flop_bet', 'turn_bet','river_bet', 'preflop_bet', 'net_outcome', 'all_in', 'money_beyond_blind', 'outcome_relative_to_start','my_blind_anti_total', 
+        'high_card', 'suited', 'pocket_pair', 'gap', 'hour','days_since_start', 'hand_frequency', 'low_card','card_rank',]]
+
+    return result 
+
+def train_test(X, y, rand_state = 151, test_size = .2):
+    """splits data into training and test
+
+    Args:
+        X (array): features
+        y (array): target
+        rand_state (int, optional): Random State. Defaults to 151.
+        test_size (float, optional): Size of split (test size). Defaults to .2.
+
+    Returns:
+        4 arrays: training/test sets, features/targets
+    """    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state = rand_state)
+    return X_train, X_test, y_train, y_test
+
+
+# splits data for classification into training & holdout
+def holdout_training_classification(df): 
     """Splits data into training and classification. Uses functions above to remove certain rows. Drops data from relevant columns
-    Saves holdout/training to 2 csv files
 
     Args:
         df (DataFrame): DataFrame to split upon 
-        filename (str, optional): filename for holdout/training, comes after 'training' or 'holdout' in name. Defaults to 'default'.
     """    
     df = get_tournaments(df)
     df = put_in_money(df)
@@ -71,8 +109,8 @@ def holdout_training_classification(df, filename='default'):
 
     primary, holdout = train_test_split(df, test_size = .2)
 
-    primary.to_csv(f'../../data/train{filename}.csv')
-    holdout.to_csv(f'../../data/holdout{filename}.csv')
+    primary.to_csv('../../data/train_classification_tournaments_4-25.csv')
+    holdout.to_csv('../../data/holdout_classification_tournaments_4-25.csv')
     
 
 

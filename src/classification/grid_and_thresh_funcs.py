@@ -7,6 +7,18 @@ from sklearn.metrics import f1_score, confusion_matrix, accuracy_score, recall_s
 
 
 def grid_search(X, y, model, param_grid, return_stuff = False):
+    """conducts grid search and then prints best estimator/best score
+
+    Args:
+        X (array): feature array
+        y (array): target array
+        model (model): sklearn model used in gridsearch
+        param_grid (dictionary): parameter grid used in gridsearch. See Sklearn's GridSearchCV documentation
+        return_stuff (bool, optional): If true will return values rather than printing. Defaults to False.
+
+    Returns:
+        results: results of gridsearch (best estimator/best score). Default is that nothing is returned and that these are printed to terminal
+    """    
     
     gscv = GridSearchCV(estimator= model, param_grid=param_grid, n_jobs = -1, verbose=1, scoring='f1')
 
@@ -23,7 +35,19 @@ def grid_search(X, y, model, param_grid, return_stuff = False):
 
 
 
-def threshold_testing(X, y, model,thresholds, num_folds=5):
+def threshold_testing(X, y, model,thresholds=[.5], num_folds=5):
+    """Gets results for various scores using various thresholds
+
+    Args:
+        X (array): feature array
+        y (array): target array
+        model (model): model (sklearn) used for testing at various thesholds
+        thresholds (list): list of thresholds to be tested. defaults to [.5]
+        num_folds (int, optional): Number of Folds in Cross Val. Defaults to 5.
+
+    Returns:
+        DataFrame: metrics at various thresholds 
+    """    
 
     results = pd.DataFrame(columns=['thresh', 'f1', 'accuracy', 'precision','recall'],index=list(range(0, len(thresholds)))) # stores the results of all theshold tests
     kf = KFold(n_splits=num_folds, shuffle=True)
@@ -61,6 +85,17 @@ def threshold_testing(X, y, model,thresholds, num_folds=5):
     return results
 
 def confusion(X,y,model,threshold):
+    """Gets consfusion matrix for specific threshold
+
+    Args:
+        X (array): feature array
+        y (array): target array
+        model (model): model (sklearn) used for testing 
+        threshold (float): threshold for model to use in predicting 
+
+    Returns:
+        dictionary: confusion matrix in a dictionary form 
+    """    
     X_train, X_test, y_train, y_test = train_test_split(X, y)
     model.fit(X_train,y_train)
     y_prob = model.predict_proba(X_test)
@@ -72,6 +107,18 @@ def confusion(X,y,model,threshold):
 
 
 def confusion_ratios(X,y,model,threshold, iterations = 100): # specific ratios i'm looking at
+    """Gets precision, npv (negative predictive value) and the percent predicted as positive. gets average over x number of iterations
+
+    Args:
+        X (array): feature array
+        y (array): target array
+        model (model): model (sklearn) used for testing 
+        threshold (float): threshold for model to use in predicting 
+        iterations (int, optional): Number of iterations to test for. Defaults to 100.
+
+    Returns:
+        [dictionary]: dictionary containing threshold used, mean precision, mean npv, and mean weighting
+    """    
     pre_lst = []
     npv_lst = []
     weight_lst = []
@@ -90,3 +137,6 @@ def confusion_ratios(X,y,model,threshold, iterations = 100): # specific ratios i
 
 
     return average
+
+if __name__=="__main__":
+    pass 

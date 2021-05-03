@@ -1,19 +1,17 @@
-from sklearn.ensemble import GradientBoostingClassifier
-from capstone3_data_prep import training_data_Xy
 import pandas as pd 
 import numpy as np 
-from grid_and_thresh_funcs import threshold_testing, confusion, confusion_ratios
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import KFold
-import matplotlib.pyplot as plt 
-plt.style.use('ggplot')
-import seaborn as sns 
+
+from grid_and_thresh_funcs import threshold_testing, confusion, confusion_ratios
+from data_prep import training_data_Xy
 
 
 
 gb_final = GradientBoostingClassifier(learning_rate=.01, n_estimators=90, min_samples_leaf=6 , min_samples_split=4 ,max_features= 3,max_depth= 5,subsample= .6)
 
 
-X, y = read_in_return_Xy_no_unused()
+X, y = training_data_Xy()
 
 
 def test_prediction_results(X, y, model, num_folds=5):
@@ -26,7 +24,7 @@ def test_prediction_results(X, y, model, num_folds=5):
         num_folds (int, optional): number of folds in cross val. Defaults to 5.
 
     Returns:
-        [type]: [description]
+        DataFrame: contains 2 columns, one for prediction, which is actual the predict_proba, so a float between 0-1, with 1 being the most positive and 0 being the least. The other column is the true value
     """    
     kf = KFold(n_splits=num_folds, shuffle=True)
     results = pd.DataFrame(columns=['prediction', 'truth'], index=X.index)
@@ -103,6 +101,5 @@ if __name__=="__main__":
     # .65+ seems good for must play
     # .55-.65 for maybe play? 
     # .55- seems good for don't play 
-    # ax = sns.histplot(data=results, x='prediction', hue='truth')
-    # plt.show()
+
     

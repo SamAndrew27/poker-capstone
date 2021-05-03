@@ -1,20 +1,30 @@
-import pandas as pd
 import numpy as np 
+import pandas as pd
 
-def fill_dependent_columns(df, fill_BB_nans = False):
+def fill_dependent_columns(df, fill_BB_nans = True, prior_actions=True):
+    """creates columns that are created using columns that I previously created
+
+    Args:
+        df (DataFrame): DataFrame from SQL Data with columns added in 'columns_from_hand_history' 
+        fill_BB_nans (bool, optional): If true will attempt to add values to nans in 'BB'. Defaults to True.
+        prior_actions (bool, optional): If True will implement 'prior_actions' and all related columns0. In its current form this will delete Cash game hands Defaults to True.
+
+    Returns:
+        DataFrame: DataFrame with additional columns added
+    """    
 
     df['blinds'] = df.apply(lambda row: blinds(row), axis =1)
  
     df['made_money'] = df['won'] > df['bet']
   
-    df['made_money'] = df['made_money'].apply(lambda x: fix_made_money(x))
+    df['made_money'] = df['made_money'].apply(lambda mm: fix_made_money(mm))
   
-    df['card_rank'] = df['my_cards'].apply(lambda x: cards_numeric(x))
+    df['card_rank'] = df['my_cards'].apply(lambda cards: card_rank(cards))
   
     df['BB'] = df['blinds'].apply(lambda x: BB(x))
 
 
-    if fill_BB_nans == True:
+    if fill_BB_nans:
         df = fix_BB_nans(df) # consider removing? # way I did this causes a warning 
     
   
@@ -28,39 +38,44 @@ def fill_dependent_columns(df, fill_BB_nans = False):
   
     df['outcome_relative_to_start'] = (df['starting_stack'] + df['net_outcome']) / df['starting_stack']  # amount I started with +/- how much I won or lost divided by starting stack
 
-    df['made_or_lost'] = df['outcome_relative_to_start'].apply(lambda x: made_or_lost(x))
+    df['made_or_lost'] = df['outcome_relative_to_start'].apply(lambda outcome: made_or_lost(outcome))
 
-    df = prior_actions_for_stats(df)
-    
-    df['prior_actions'] = df['prior_actions'].apply(lambda x: unlist(x)) # fix the weird thing I did to create prior actions (take dictionary out of list)
+    df['num_players_before'] = df['players_acting_before_me'].apply(lambda players: len(players)) # players before me currently in the pot
 
-    df['vpip_all_players'] = df['prior_actions'].apply(lambda x: make_vpip(x))
-
-    df['vpip_players_after'] = df.apply(lambda row: vpip_players_after(row), axis=1)
-
-    df['vpip_players_before'] = df.apply(lambda row: vpip_players_before(row), axis=1)
-
-    df['num_players_before'] = df['players_acting_before_me'].apply(lambda x: len(x)) # players before me currently in the pot
-
-    df['num_players_after'] = df['players_acting_after_me'].apply(lambda x: len(x)) # players after me currently in the pot
-
-    df['num_actions_before_players'] = df.apply(lambda row: actions_witnessed_before(row), axis=1) # number of actions VPIP is created upon
-
-    df['num_actions_after_players'] = df.apply(lambda row: actions_witnessed_after(row), axis=1)  # number of actions VPIP is created upon 
+    df['num_players_after'] = df['players_acting_after_me'].apply(lambda players: len(players)) # players after me currently in the pot
 
     df['amount_to_call'] = df.apply(lambda row: amount_to_call(row), axis=1)
 
-    df['average_table_vpip'] = df['vpip_all_players'].apply(lambda x: average_table_vpip(x)) # does not include me 
-
-    df['total_actions_witnessed'] = df['prior_actions'].apply(lambda x: total_actions_witnessed(x))
-
-    df['vpip_relavant_players'] = df.apply(lambda row: vpip_relavant_players(row), axis=1)
-
-    df['total_actions_witnessed_relevant_players'] = df.apply(lambda row: total_actions_witnessed_relevant_players(row), axis=1)
-
-    df['weighted_relevant_vpip'] = df.apply(lambda row: weighted_relevant_vpip(row), axis=1)
-
     df['limps&calls'] = df['limpers'] + df['callers']
+
+    if prior_actions: 
+
+        df = prior_actions_for_stats(df)
+
+        df['prior_actions'] = df['prior_actions'].apply(lambda prior_actions: unlist(prior_actions)) # fix the weird thing I did to create prior actions (take dictionary out of list)
+
+        df['vpip_all_players'] = df['prior_actions'].apply(lambda prior_actions: make_vpip(prior_actions))
+
+        df['vpip_players_after'] = df.apply(lambda row: vpip_players_after(row), axis=1)
+
+        df['vpip_players_before'] = df.apply(lambda row: vpip_players_before(row), axis=1)
+
+        df['num_actions_before_players'] = df.apply(lambda row: actions_witnessed_before(row), axis=1) # number of actions VPIP is created upon
+
+        df['num_actions_after_players'] = df.apply(lambda row: actions_witnessed_after(row), axis=1)  # number of actions VPIP is created upon 
+
+        df['average_table_vpip'] = df['vpip_all_players'].apply(lambda vpip_all_players: average_table_vpip(vpip_all_players)) # does not include me 
+
+        df['total_actions_witnessed'] = df['prior_actions'].apply(lambda prior_actions: total_actions_witnessed(prior_actions))
+
+        df['vpip_relavant_players'] = df.apply(lambda row: vpip_relavant_players(row), axis=1)
+
+        df['total_actions_witnessed_relevant_players'] = df.apply(lambda row: total_actions_witnessed_relevant_players(row), axis=1)
+
+        df['weighted_relevant_vpip'] = df.apply(lambda row: weighted_relevant_vpip(row), axis=1)
+
+
+
 
     return df 
 
@@ -68,7 +83,7 @@ def fill_dependent_columns(df, fill_BB_nans = False):
 
 
 def blinds(row): # hand history & gametype 
-    """Finds blinds from hand
+    """Finds blinds from hand - uses presets for cash hands 
 
     Args:
         row from dataframe, looks at HandHistory/cash_or_tourn
@@ -101,38 +116,38 @@ def blinds(row): # hand history & gametype
     return result 
 
 
-def fix_made_money(x):
+def fix_made_money(mm):
     """turns made_money from bool into 1/0 bool
 
     Args:
-        x: made_money
+        mm: made_money column 
 
     Returns:
         int: 1 = situations where I made money, 0 = situations where I lost money
     """    
 
     result = 0
-    if x == True:
+    if mm == True:
         result = 1
     else:
         result = 0
     return result
 
 
-def cards_numeric(x):
+def card_rank(cards):
     """using Bill Chen's formula I am assigning a numeric value to my hole cards
 
     Args:
-        x (list): my cards
+        cards (list): my cards, 'my_cards' column 
 
     Returns:
         int: card's rank 
     """    
     result = 0
-    if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:
-            c1 = x[0]
-            c2 = x[1]
+    if isinstance(cards, list):
+        if len(cards[0]) == 2 and len(cards[1]) == 2:
+            c1 = cards[0]
+            c2 = cards[1]
             c1_rank = c1[1]
             c2_rank = c2[1]
             c1_suit = c1[0]
@@ -188,7 +203,7 @@ def BB(x):
     """Tries to find what BB was
 
     Args:
-        blinds: list of blinds
+        blinds: list of blinds, 'blinds' column
 
     Returns:
         float: BB, if one was able to be found
@@ -300,16 +315,16 @@ def fix_BB_nans(input_df):
 # negative class is losing $
 # positive class is making $
 # this may be redundant, but rather than checking the validity of those columns made a while ago lets do this
-def made_or_lost(x):
+def made_or_lost(outcome):
     """Finds whether I made or lost money
 
     Args:
-        outcome_relative_to_start: column which says how much I won or lost relative to starting stack
+        outcome_relative_to_start: column which says how much I won or lost relative to starting stack (float)
 
     Returns:
         int: 1 for made money/broke even, 0 for cases where I lost money
     """    
-    if x >= 1:
+    if outcome >= 1:
         return 1
     else:
         return 0 
@@ -329,7 +344,7 @@ def prior_actions_for_stats(df): # right now we are deleting the cash game hands
     '''
     mask = df['TournamentNumber'] != '' # ignores cash hands for time being, make this optional w/ argument (or just make sure non_tournaments not considered in first iteration)? 
     df = df[mask]
-    df['prior_actions'] = df.HandHistory.apply(lambda x: make_lst(x)) # creates column of empty lists
+    df['prior_actions'] = df.HandHistory.apply(lambda prior_actions: make_lst(prior_actions)) # creates column of empty lists
     unique_TN = df['TournamentNumber'].unique()
     for num in unique_TN: # iterates through all unique tournament numbers 
         mask = df['TournamentNumber'] == num
@@ -349,14 +364,29 @@ def prior_actions_for_stats(df): # right now we are deleting the cash game hands
     return df
 
 
-def make_lst(x): # definitely a better way to do this but this is easy 
+def make_lst(prior_actions): # definitely a better way to do this but this is easy 
+    """makes 'prior_actions' in above function, column filled with empty lists
+
+    Args:
+        prior_actions ([type]): [description]
+
+    Returns:
+        List: empty list filled in above function 
+    """    
     return []
 
-def unlist(x):
-    for elem in x:
-        return elem 
+def unlist(prior_actions):
+    """removes exterior list, leaving just a dictionary in 'prior_actions'
 
-def make_vpip(x):
+    Args:
+        prior_actions (list): list with dictionary in it
+
+    Returns:
+        dictionary: dict contained within 'prior_actions'
+    """    
+    return prior_actions[0]
+
+def make_vpip(prior_actions):
     """finds vpip for all players using prior stats and returns it
 
     Args:
@@ -366,8 +396,8 @@ def make_vpip(x):
         dictionary: contains actions of all prior actions for every player in hand
     """    
     result = {}
-    if x != {}:
-        for player, actions in x.items(): # iterate through player dictionaries
+    if prior_actions != {}:
+        for player, actions in prior_actions.items(): # iterate through player dictionaries
             count = 0
             if len(actions) != 0:
                 for action in actions: # iterate through actions
@@ -379,11 +409,15 @@ def make_vpip(x):
     return result 
                 
 def vpip_players_after(row):
-    """Gets average vpip for all players yet to act
+    """gets vpip of all players yet to make their first action
+
+    Args:
+        row: row of dataframe, used to get 'vpip_all_players'/'players_acting_after_me'
 
     Returns:
         float: average VPIP for all subsuquent players
     """    
+
     vpips = []
     vpip_dic = row['vpip_all_players'] # dictonary of vpips of each player
     players_after = row['players_acting_after_me']
@@ -398,10 +432,13 @@ def vpip_players_after(row):
         return np.mean(vpips)
 
 def vpip_players_before(row):
-    """gets VPIP of all players yet to act
+    """gets vpip of all players yet to make their first action
+
+    Args:
+        row: row of dataframe, used to get 'vpip_all_players'/'players_acting_before_me'
 
     Returns:
-        float: VPIP of all subsuquent players
+        float: average VPIP for all players that already entered hand 
     """    
     vpips = []
     vpip_dic = row['vpip_all_players'] # dictonary of vpips of each player
@@ -419,6 +456,9 @@ def vpip_players_before(row):
 def actions_witnessed_before(row):
     """counts number of actions used to created VPIP of players before
 
+    Args:
+        row: row of dataframe, used to get 'prior_actions'/'players_acting_before_me'
+
     Returns:
         int: number of actions used to create before players vpip stats
     """    
@@ -431,9 +471,12 @@ def actions_witnessed_before(row):
 def actions_witnessed_after(row):
     """counts number of actions used to created VPIP of players after
 
+    Args:
+        row: row of dataframe, used to get 'prior_actions'/'players_acting_after_me'
+
     Returns:
-        int: number of actions used to create players after vpip stats
-    """  
+        int: number of actions used to create after players vpip stats
+    """    
     prior_actions = row['prior_actions']
     total = 0
     for player in row['players_acting_after_me']:
@@ -445,8 +488,10 @@ def actions_witnessed_after(row):
 
 
 def amount_to_call(row):
-    """finds how much it would cost me to stay in the hand
+    """finds how much it would cost me to stay in the hand (call)
 
+    Args:
+        row: row of dataframe, used to get 'HandHistory'/'players_names'
 
     Returns:
         float: bet size I am facing to stay in the hand
@@ -502,14 +547,19 @@ def amount_to_call(row):
     return result 
 
 
-def average_table_vpip(x):
+def average_table_vpip(vpip_all_players):
     """calculates the average VPIP of the table
 
+    Args:
+        vpip_all_players (dictionary): vpip of all players at table
+
     Returns:
-        float: average VPIP of players at the table
+        float: average VPIP of players at the table   
     """    
+
+
     vpip_lst = []
-    for key, val in x.items():
+    for key, val in vpip_all_players.items():
         if key == 'Hero' or val == 'No Hands':
             continue
         else:
@@ -517,14 +567,17 @@ def average_table_vpip(x):
     return np.mean(vpip_lst)
 
 
-def total_actions_witnessed(x):
+def total_actions_witnessed(prior_actions):
     """number of actions used to caclulate table VPIP
+
+    Args:
+        prior_actions: dictionary containing prior actions of all players
 
     Returns:
         int: count of actions used to calculate average table vpip
     """    
     total = 0
-    for player, actions in x.items():
+    for player, actions in prior_actions.items():
         if player != 'Hero':
             total += len(actions)
     return total 
@@ -534,8 +587,11 @@ def total_actions_witnessed(x):
 def vpip_relavant_players(row):
     """vpip of all players who have entered the hand or are yet to act
 
+    Args:
+        row: row of dataframe, used to get 'players_acting_before_me'/'players_acting_after_me'/'vpip_all_players'
+
     Returns:
-        float: average vpip of relevant players
+        float: average vpip of relevant players (those in hand/those yet to act)
     """    
     vpip_lst = []
     players_before = row['players_acting_before_me']
@@ -551,7 +607,10 @@ def vpip_relavant_players(row):
     return np.mean(vpip_lst)
 
 def total_actions_witnessed_relevant_players(row):
-    """number of actions used to calculate relevant player stats
+    """"number of actions used to calculate relevant player stats
+
+    Args:
+        row: row of dataframe, used to get 'players_acting_before_me'/'players_acting_after_me'/'prior_actions'
 
     Returns:
         int: total number of relevant player actions
@@ -570,9 +629,13 @@ def weighted_relevant_vpip(row):
     """VPIP with scores weighted according to how many actions were used to calculate them 
     (same as relevant player stuff but w/ weighting)
 
+    Args:
+        row: row of dataframe, used to get 'players_acting_before_me'/'players_acting_after_me'/'vpip_all_players'
+
     Returns:
         float: average vpips of relevant players, weighted according to # of actions used in their creation
     """    
+
     vpip_lst = []
     players_before = row['players_acting_before_me']
     players_after = row['players_acting_after_me']

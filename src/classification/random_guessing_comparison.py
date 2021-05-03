@@ -6,10 +6,15 @@ from sklearn.metrics import f1_score, confusion_matrix, accuracy_score, recall_s
 
 
 def test_values(true, pred):
+    """input true/predicted to get results for various different metrics
 
-    
+    Args:
+        true (array): array of true values
+        pred (array): array of predicted values
 
-
+    Returns:
+        various metrics (floats or ints): precision, accuracy, recall, roc_auc, brier, f1, npv, tp, fp, tn, fn
+    """    
     tn, fp, fn, tp = confusion_matrix(true, pred).ravel()
     accuracy = accuracy_score(true, pred)
     f1 = f1_score(true, pred)
@@ -20,10 +25,19 @@ def test_values(true, pred):
     npv =  tn/ (tn + fn)
 
     return precision, accuracy, recall, roc_auc, brier, f1, npv, tp, fp, tn, fn
-    # return pd.DataFrame({'precision':precision, 'accuracy':accuracy, 'recall':recall, 'f1':f1, 'npv':npv, 'tp':tp, 'fp':fp, 'tn':tn, 'fn':fn}, index=[idx])
 
 
 def multiple_tests_random(iterations = 100 , probs=[0.405, 0.595]):
+    """Runs multiple tests and finds the average metrics over those tests
+
+    Args:
+        iterations (int, optional): number of iterations to test. Defaults to 100.
+        probs (list, optional): weighting of our random guessing, 2 valued list. First value is portion predicted negative, second value is portion predicted as positive. Defaults to [0.405, 0.595].
+
+    Returns:
+        DataFrame: DataFrame containing average scores of the relevant metrics 
+    """    
+
     results = pd.DataFrame(columns=['precision', 'accuracy', 'recall', 'roc auc', 'brier', 'f1', 'npv', 'tp', 'fp', 'tn', 'fn' ], index=list(range(iterations)))
     _, y_hold = read_in_holdout_Xy()
 
@@ -37,16 +51,9 @@ def multiple_tests_random(iterations = 100 , probs=[0.405, 0.595]):
     
     return results
 
-def test_all_positive():
-    results = pd.DataFrame(columns=['precision', 'accuracy', 'recall', 'roc auc', 'brier', 'f1', 'npv', 'tp', 'fp', 'tn', 'fn' ], index=[0])
-    _, y_hold = read_in_holdout_Xy()
-    preds = np.ones(shape=y_hold.shape)
-    results.iloc[0] = test_values(y_hold, preds)
-    return results
 
 if __name__=="__main__":
     
-    print(np.mean(test_all_positive()))
     # print(np.mean(multiple_tests_random(iterations=1000)))
 
     # WEIGHTED

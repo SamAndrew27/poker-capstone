@@ -20,15 +20,15 @@ def fill_betting_columns(df):
 
     df['preflop_bet'] = df['bet'] - (df['flop_bet'] + df['turn_bet'] + df['river_bet'] + df['my_blind_anti_total'])
 
-    df['high_card'] = df['my_cards'].apply(lambda x: high_card(x))
+    df['high_card'] = df['my_cards'].apply(lambda cards: high_card(cards))
 
-    df['low_card'] = df['my_cards'].apply(lambda x: low_card(x)) # redundant with gap/high card? 
+    df['low_card'] = df['my_cards'].apply(lambda cards: low_card(cards)) # redundant with gap/high card? 
 
-    df['suited'] = df['my_cards'].apply(lambda x: suited(x))
+    df['suited'] = df['my_cards'].apply(lambda cards: suited(cards))
 
-    df['pocket_pair'] = df['my_cards'].apply(lambda x: pocket_pair(x)) # redundant with the gap column?
+    df['pocket_pair'] = df.apply(lambda row: pocket_pair(row), axis=1)
 
-    df['gap'] = df['my_cards'].apply(lambda x: gap(x))
+    df['gap'] = df['high_card'] - df['low_card']
 
     return df
 
@@ -36,8 +36,9 @@ def fill_betting_columns(df):
 ##############################################
 def flop_bet(row): # takes in HandHistory and money_beyond_blind
     
-    """finds value of flop bet if I made one
-    consider looking at how I did similar functions in other files this and similar functions more robust
+    """finds value of my flop bet(s) if I made one. In other words finds all the money I put in during the flop 
+    Uses 'money_beyond_blind' and 'HandHistory' to determine size of my flop bet.
+    
     
     Args:
         row of dataframe, extract HandHistory data and money_beyond_blind data: 
@@ -50,7 +51,7 @@ def flop_bet(row): # takes in HandHistory and money_beyond_blind
     mbb = row['money_beyond_blind']
     result = 0
     subset = []
-    action_lst = []
+    action_lst = [] # list of all of Hero's actions 
     if mbb == 1: # skips process if no money put in beyond blind
         start = 0
         stop = 0
@@ -78,7 +79,7 @@ def flop_bet(row): # takes in HandHistory and money_beyond_blind
                    
 
 def turn_bet(row): # takes in HandHistory and money_beyond_blind
-    """finds value of turn bet if I made one
+    """finds how much $ hero put in on the turn 
 
     Args:
         row of dataframe, 2 values used, HandHistory & 'money_beyond_blind'
@@ -120,7 +121,7 @@ def turn_bet(row): # takes in HandHistory and money_beyond_blind
 
 
 def river_bet(row): # takes in HandHistory and money_beyond_blind
-    """finds value of river bet if I made one
+    """finds how much $ hero put in on the river
 
     Args:
         row of dataframe, 2 values used, HandHistory & 'money_beyond_blind'
@@ -154,21 +155,21 @@ def river_bet(row): # takes in HandHistory and money_beyond_blind
     
     return result 
 
-def high_card(x):
-    """finds value of highest card
+def high_card(cards):
+    """finds value of highest card - if cards are equal values will be the same
 
     Args:
-        x = cards: list of my 2 cards
+        cards: list of my 2 cards
 
     Returns:
         int: value of highest card (2 for 2, 14 for Ace)
     """    
     
     result = None
-    if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:# checking that I have cards
-            c1 = x[0]
-            c2 = x[1]
+    if isinstance(cards, list):
+        if len(cards[0]) == 2 and len(cards[1]) == 2:# checking that I have cards
+            c1 = cards[0]
+            c2 =cards[1]
             c1_rank = c1[1]
             c2_rank = c2[1]
             numeric_card_lst = []
@@ -182,20 +183,20 @@ def high_card(x):
             result = int(max(numeric_card_lst))
     return result
 
-def low_card(x):
-    """finds value of lowest card
+def low_card(cards):
+    """finds value of lowest card - if cards are equal values will be the same 
 
     Args:
-        x = cards: list of my 2 cards
+        cards: list of my 2 cards
 
     Returns:
         int: value of highest card (2 for 2, 14 for Ace)
     """    
     result = None
-    if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:# checking that I have cards
-            c1 = x[0]
-            c2 = x[1]
+    if isinstance(cards, list):
+        if len(cards[0]) == 2 and len(cards[1]) == 2:# checking that I have cards
+            c1 = cards[0]
+            c2 = cards[1]
             c1_rank = c1[1]
             c2_rank = c2[1]
             numeric_card_lst = []
@@ -209,72 +210,37 @@ def low_card(x):
             result = int(min(numeric_card_lst))
     return result  
 
-def suited(x):
-    """finds whether my 2 cards are suited
+def suited(cards):
+    """finds whether my 2 cards are suited 
 
     Args:
-        x = cards: list of my 2 cards
+        cards: list of my 2 cards
 
     Returns:
         int: 0 for unsuited, 1 for suited
     """    
     result = 0
-    if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:# checking that I have cards
-            c1 = x[0]
-            c2 = x[1]
+    if isinstance(cards, list):
+        if len(cards[0]) == 2 and len(cards[1]) == 2:# checking that I have cards
+            c1 = cards[0]
+            c2 = cards[1]
             c1_suit = c1[0]
             c2_suit = c2[0]
             if c2_suit == c1_suit:
                 result = 1
     return result 
 
-def pocket_pair(x):
-    """finds whether my 2 cards are a pocket pair
+
+def pocket_pair(row):
+    """looks at high card and low card to determine if 2 are a pocket pair
 
     Args:
-        x = cards: list of my 2 cards
+        row (DataFrame Row): row of DF used for apply function. Uses high_card / low_card
 
     Returns:
-        int: 0 for non-pocket pair, 1 for pocket pair 
+        int: 1 if cards are the same, 0 if they are not 
     """    
-    result = 0
-    if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2:# checking that I have cards
-            c1 = x[0]
-            c2 = x[1]
-            c1_rank = c1[1]
-            c2_rank = c2[1]
-            if c1_rank == c2_rank:
-                result = 1
-    return result 
-
-
-def gap(x):
-    """finds the value gap between my 2 cards
-
-    Args:
-        x = cards: list of my 2 cards
-
-    Returns:
-        int: distance between 2 cards (e.g. Ace and Queen would return 2)
-    """    
-    result = None
-    if isinstance(x, list):
-        if len(x[0]) == 2 and len(x[1]) == 2: # checking that I have cards
-            c1 = x[0]
-            c2 = x[1]
-            c1_rank = c1[1]
-            c2_rank = c2[1]  
-            c_rank = [c1_rank, c2_rank]                        
-            numeric_card_lst = []
-            
-            for card in c_rank: # assigning numeric value of card ranks
-                if card in ['A', 'K', 'Q', 'J', '1']:
-                    numeric_dic = {'A': 14, 'K': 13, 'Q': 12, 'J': 11, '1': 10}
-                    numeric_card_lst.append(numeric_dic[card])
-                else:
-                    numeric_card_lst.append(int(card))
-                    
-            result = max(numeric_card_lst) - min(numeric_card_lst)
-    return result 
+    if row['high_card'] == row['low_card']:
+        return 1
+    else:
+        return 0 

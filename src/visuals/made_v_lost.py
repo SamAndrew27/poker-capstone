@@ -39,5 +39,5 @@ def plot_made_v_lost():
 
 if __name__ == "__main__":
     ax, fig = plot_made_v_lost()
-    plt.show()
+    # plt.show()
     plt.savefig('../../images/general-plots/won_v_lost_sizing.png', dpi=fig.dpi)

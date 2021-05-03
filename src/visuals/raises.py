@@ -18,7 +18,7 @@ def plot_raises():
     won['raises&reraises'] = won['raises&reraises'].apply(lambda x: change_raise(x))
     lost['raises&reraises'] = lost['raises&reraises'].apply(lambda x: change_raise(x))
 
-    fig, ax = plt.subplots(figsize=(8,8))
+    fig, ax = plt.subplots(figsize=(12,8))
     width = 0.35
     labels = ['Unraised', 'Raised']
     x = np.arange(len(labels))
@@ -30,7 +30,7 @@ def plot_raises():
 
     ax.set_ylabel('Number of Hands')
     ax.set_title('Number of Hands Won or Lost \n by Whether Pot was Raise')
-    return ax 
+    return ax, fig
 
 
 def change_raise(x):
@@ -49,7 +49,7 @@ def change_raise(x):
         return 'no raise'
 
 if __name__ == "__main__":
-    ax = plot_raises()
+    ax, fig = plot_raises()
 
     # won, lost, __ = load_whole()
     # won['raises&reraises'] = won['raises&reraises'].apply(lambda x: change_raise(x))
@@ -57,4 +57,6 @@ if __name__ == "__main__":
     # print(won['raises&reraises'].value_counts())
     # print(lost['raises&reraises'].value_counts())
 
-    plt.show()
+    # plt.show()
+
+    plt.savefig('../../images/general-plots/raises_sizing.png', dpi=fig.dpi)

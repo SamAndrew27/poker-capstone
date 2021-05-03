@@ -126,7 +126,7 @@ Before I discuss modeling, it should be noted that there is much variance intrin
 This same sort of variation is also present on a hand-to-hand basis. The best possible hand, pocket aces, will beat the worst hand, 7-2 offsuit, around 87% of the time. This means that the question of whether I should play a poker hand is not the same as whether I will win a hand. Therefore my model can only hope to be a suggestion, and will not be able to perfectly predict whether or not I will win money. 
 
 
-![Aces](images/cap2_images/aces.png)
+![Aces](images/general-plots/aces.png)
 
 My model is built exclusively from the hands that I did play. It is possible that there are many hands that I should have, but did not play. I will not be able to answer this question unless I start playing all the hands I am dealt, which is certainly not an ideal strategy. There are many different ways to improve at poker, but my model hopes to answer one very specific and important question: given the manner in which I have historically played and given the conditions when cards are first dealt will I most likely win or lose money by playing any given poker hand. 
 

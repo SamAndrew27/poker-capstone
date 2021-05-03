@@ -20,7 +20,7 @@ def plot_made_v_lost():
     labels = ['Won/Broke Even', 'Lost']
     x = np.arange(len(labels))
     width=.35
-    fig, ax = plt.subplots(figsize=(10,10))
+    fig, ax = plt.subplots(figsize=(10,6))
     won_ax = ax.bar(x=0 + width/1.5, height=len(won), width=width,  label='Won/Broke Even')
     lost_ax = ax.bar(x=1 - width/1.5, height=len(lost), width=width,  label='Lost')
 
@@ -35,8 +35,9 @@ def plot_made_v_lost():
 
     fig.tight_layout()
 
-    return ax 
+    return ax, fig
 
 if __name__ == "__main__":
-    ax = plot_made_v_lost()
+    ax, fig = plot_made_v_lost()
     plt.show()
+    plt.savefig('../../images/general-plots/won_v_lost_sizing.png', dpi=fig.dpi)

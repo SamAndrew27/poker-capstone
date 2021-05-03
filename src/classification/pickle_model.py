@@ -16,7 +16,8 @@ def pickle_model(name='model'):
     gb_final = GradientBoostingClassifier(learning_rate=.01, n_estimators=90, min_samples_leaf=6 , min_samples_split=4 ,max_features= 3,max_depth= 5,subsample= .6)
     X,y = get_data_and_join()
     gb_final.fit(X,y)
-    pickle.dump(gb_final, open(f'../../flask/models/{name}.pickle', 'wb'))
+    pickle.dump(gb_final, open(f'../../flask/flask_AB/models/{name}.pickle', 'wb'))
+    pickle.dump(gb_final, open(f'../../flask/flask_standard/models/{name}.pickle', 'wb'))
 
 
 

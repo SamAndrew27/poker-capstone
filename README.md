@@ -114,7 +114,7 @@ From this data I hoped to build a model to predict the outcome of any given hand
 * Number of Players After: This feature represents the number of players yet to make their first action. It is an integer value, and its value ranges from 0 to 8. You usually prefer to see a lower number here, but confounding variables make it tricky to say outright that a lower number is preferable. 
 
 * Made or Lost Money: My target variable. It is a boolean value, with the positive class representing situations in which I made money or broke even and the negative class representing situations in which I lost money.
-![Won vs Lost](images/general-plots/won_v_lost_sizing.png)
+![Won vs Lost](images/general-plots/won_v_lost_all_data.png)
 
 
 

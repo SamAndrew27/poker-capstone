@@ -226,7 +226,7 @@ if __name__=="__main__":
     # lower_df, middle_df_true,middle_df_false, top_df = run_multiple_test(lower_thresh=0.51, upper_thresh=0.595, save=False, iterations=50, split_middle=True)
     # lower_df, middle_true, middle_false, top_df = run_multiple_test(lower_thresh=0.51, upper_thresh=0.52, save=False, iterations=10, split_middle=True)
 
-    print(run_test_single_thresh(thresh=.53, iterations=50))
+    print(run_test_single_thresh(thresh=.5, iterations=50))
 
     # print(np.mean(top_df))
     # print(np.mean(middle_df_true))

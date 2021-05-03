@@ -18,7 +18,7 @@ def plot_raises():
     won['raises&reraises'] = won['raises&reraises'].apply(lambda x: change_raise(x))
     lost['raises&reraises'] = lost['raises&reraises'].apply(lambda x: change_raise(x))
 
-    fig, ax = plt.subplots(figsize=(10,10))
+    fig, ax = plt.subplots(figsize=(8,8))
     width = 0.35
     labels = ['Unraised', 'Raised']
     x = np.arange(len(labels))

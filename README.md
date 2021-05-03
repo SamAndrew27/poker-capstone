@@ -89,6 +89,8 @@ From this data I hoped to build a model to predict the outcome of any given hand
 
 ## Feature Creation
 
+![feature importances](images/general-plots/feature_importances.png)
+
 * Position: this is my position at the table, as a fraction of the total players. In early position, you have to make your bet first, which generally puts you at a disadvantage relative to those who make their play after you. If I am in the dealer position, the latest possible position, the value for this feature is a 1. If I am in the small-blind, the earliest possible position, its value can be as low as 0.11.
 
 * Big Blinds in Stack: this is how much money I have, relative to the Big Blind. The Big Blind is the amount one player has to bet before any cards are dealt. It generally represents the minimum size of the bet as well. This ratio heavily dictates the strategy a poker player ought to follow in a tournament game.

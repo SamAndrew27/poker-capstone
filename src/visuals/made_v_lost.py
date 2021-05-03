@@ -31,7 +31,6 @@ def plot_made_v_lost():
     plt.text(x=1 - .3, y = 500, s=f'{lost_percent}%', fontsize=25)
     ax.set_title('Number of Hands \n Won or Lost')
     ax.set_ylabel('Number of Hands')
-    # ax.legend()
 
     fig.tight_layout()
 

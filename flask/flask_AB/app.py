@@ -85,8 +85,8 @@ def save_hand():
     df = df.drop(df.columns[0], axis=1)
     temp_df = pd.DataFrame({'suited': [session['suited']], 
                         'low_card': [session['low_card']],
-                        'position': [session['high_card']], 
-                        'high_card': [None], 
+                        'position': [session['position']], 
+                        'high_card': [session['high_card']], 
                         'card_rank': [session['card_rank']],
                         'limpers': [session['limpers']], 
                         'raises&reraises': [session['raises&reraises']], 
@@ -118,8 +118,8 @@ def save_hand_null():
     df = df.drop(df.columns[0], axis=1)
     temp_df = pd.DataFrame({'suited': [session['suited']], 
                         'low_card': [session['low_card']],
-                        'position': [session['high_card']], 
-                        'high_card': [None], 
+                        'position': [session['position']], 
+                        'high_card': [session['high_card']], 
                         'card_rank': [session['card_rank']],
                         'limpers': [session['limpers']], 
                         'raises&reraises': [session['raises&reraises']], 
@@ -194,6 +194,7 @@ def predict():
     session['low_card'] = low_card
     session['high_card'] = high_card
     session['card_rank'] = rank
+    session['position'] = position 
     session['limpers'] = int(request.form['limpers'])
     session['raises&reraises'] = int(request.form['raises&reraises'])
     session['num_players_before'] = int(request.form['num_players_before'])

@@ -81,7 +81,7 @@ def results():
 @app.route('/save_hand', methods=['POST'])
 def save_hand():
     chips_left = float(request.form['chips_left'])
-    df = pd.read_csv('results.csv')
+    df = pd.read_csv(f'hand_results/{session["filename"]}.csv')
     df = df.drop(df.columns[0], axis=1)
     temp_df = pd.DataFrame({'suited': [session['suited']], 
                         'low_card': [session['low_card']],

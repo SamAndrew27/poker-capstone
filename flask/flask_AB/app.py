@@ -207,11 +207,7 @@ def predict():
 
 
 
-    if fork == 'model':
-        if prediction >= 0.62:
-            page = f'''
-            <table>
-                <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="green">{result}</font></td></tr> 
+    table = f'''
                 <tr><td></td></tr>
 
                 <tr><td><font size=5>Input Data:</font></td><td></td></tr>
@@ -228,7 +224,16 @@ def predict():
                 <tr><td><font size=4>Position:</font></td><td><b><font size=4>{request.form['position_num']}/{request.form['num_players']}</font><b></td></tr>
                 <tr><td><font size=4>BB in Stack:</font></td><td><b><font size=4>{round(X['BB_in_stack'].iloc[0], 2)}</font><b></td></tr>
 
+            <table>'''
+
+    if fork == 'model':
+        if prediction >= 0.62:
+            page = f'''
             <table>
+                <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="green">{result}</font></td></tr> 
+                {table}
+
+
             <form action='/results' method='POST' >        
                 <button type='submit'>Input Hand Results</button>
             </form>
@@ -238,22 +243,8 @@ def predict():
             page = f'''
             <table>
                 <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="orange">{result}</font></td></tr> 
-                <tr><td></td></tr>
+                {table}
 
-                <tr><td><font size=5>Input Data:</font></td><td></td></tr>
-                <tr><td></td></tr>
-
-                <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{first_card.capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{second_card.capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited'].capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Card Rank:</font></td><td><b><font size=4>{X['card_rank'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Limpers:</font></td><td><b><font size=4>{X['limpers'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Raises & Reraises:</font></td><td><b><font size=4>{X['raises&reraises'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Number of Players Having Entered Pot:</font></td><td><b><font size=4>{X['num_players_before'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Number of Players Yet to Act:</font></td><td><b><font size=4>{X['num_players_after'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Position:</font></td><td><b><font size=4>{request.form['position_num']}/{request.form['num_players']}</font><b></td></tr>
-                <tr><td><font size=4>BB in Stack:</font></td><td><b><font size=4>{round(X['BB_in_stack'].iloc[0], 2)}</font><b></td></tr>
-            <table>
             <form action='/results' method='POST' >        
                 <button type='submit'>Played Hand</button>
             </form>
@@ -265,22 +256,8 @@ def predict():
             page = f'''
             <table>
                 <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="red">{result}</font></td></tr> 
-                <tr><td></td></tr>
+                {table}
 
-                <tr><td><font size=5>Input Data:</font></td><td></td></tr>
-                <tr><td></td></tr>
-
-                <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{first_card.capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{second_card.capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited'].capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Card Rank:</font></td><td><b><font size=4>{X['card_rank'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Limpers:</font></td><td><b><font size=4>{X['limpers'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Raises & Reraises:</font></td><td><b><font size=4>{X['raises&reraises'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Number of Players Having Entered Pot:</font></td><td><b><font size=4>{X['num_players_before'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Number of Players Yet to Act:</font></td><td><b><font size=4>{X['num_players_after'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Position:</font></td><td><b><font size=4>{request.form['position_num']}/{request.form['num_players']}</font><b></td></tr>
-                <tr><td><font size=4>BB in Stack:</font></td><td><b><font size=4>{round(X['BB_in_stack'].iloc[0], 2)}</font><b></td></tr>
-            <table>
             <form action='/save_hand_null' method='POST' >        
                 <button type='submit'>Continue</button>
             </form>
@@ -289,22 +266,8 @@ def predict():
         page = f'''
         <table>
             <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="blue">Up to You</font></td></tr> 
-            <tr><td></td></tr>
+            {table}
 
-            <tr><td><font size=5>Input Data:</font></td><td></td></tr>
-            <tr><td></td></tr>
-
-            <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{first_card.capitalize()}</font><b></td></tr>
-            <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{second_card.capitalize()}</font><b></td></tr>
-            <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited'].capitalize()}</font><b></td></tr>
-            <tr><td><font size=4>Card Rank:</font></td><td><b><font size=4>{X['card_rank'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Limpers:</font></td><td><b><font size=4>{X['limpers'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Raises & Reraises:</font></td><td><b><font size=4>{X['raises&reraises'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Number of Players Having Entered Pot:</font></td><td><b><font size=4>{X['num_players_before'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Number of Players Yet to Act:</font></td><td><b><font size=4>{X['num_players_after'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Position:</font></td><td><b><font size=4>{request.form['position_num']}/{request.form['num_players']}</font><b></td></tr>
-            <tr><td><font size=4>BB in Stack:</font></td><td><b><font size=4>{round(X['BB_in_stack'].iloc[0], 2)}</font><b></td></tr>
-        <table>
         <form action='/results' method='POST' >        
             <button type='submit'>Played Hand</button>
         </form>
@@ -312,9 +275,6 @@ def predict():
             <button type='submit'>Did Not Play Hand</button>
         </form>
         '''
-
-
-
     return page 
 
 

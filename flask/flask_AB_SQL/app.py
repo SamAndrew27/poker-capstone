@@ -1,13 +1,12 @@
-# Demonstrates Bootstrap version 3.3 Starter Template
-# available here: https://getbootstrap.com/docs/3.3/getting-started/#examples
 import psycopg2 as pg2
 from sqlalchemy import create_engine
 
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, redirect
 import pickle
 import numpy as np 
 import pandas as pd 
-from app_funcs import construct_cards, suited_to_int
+from poker_funcs import construct_cards, suited_to_int
+
 app = Flask(__name__)
 app.secret_key = 'dev'
 
@@ -19,137 +18,75 @@ engine = create_engine("postgresql://postgres:galvanize@localhost:5432/hand_resu
 
 cur = conn.cursor()
 
-# home page
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
+
 @app.route('/save_percent_filename', methods=['POST', 'GET'])
 def save_percent_filename():
-    # cur.execute("""SELECT table_name FROM information_schema.tables
-    #     WHERE table_schema = 'public'""")
-    # for table in cur.fetchall():
-    #     print(table)    
-
-    cur.execute(
-        f'''CREATE TABLE {request.form['filename']}(
-            hand_id INT, 
-            suited BOOL,
-            high_card INT,
-            low_card INT,
-            position FLOAT,
-            card_rank FLOAT,
-            limpers INT,
-            raises_reraises INT,
-            num_players_before INT,
-            num_players_after INT,
-            bb_in_stack INT,
-            starting_stack FLOAT,
-            end_stack FLOAT,
-            model VARCHAR,
-            prediction VARCHAR);
-        ''')
-
+    session['duplicate'] = False
     session['percent_model'] = float(request.form['percent_predict']) / 100
-    session['percent_non_model'] = 1 - session['percent_model']
+    session['session_name'] =  request.form['session_name']
+    cur.execute("""SELECT table_name FROM information_schema.tables
+       WHERE table_schema = 'public'""")
+    for table in cur.fetchall():
+        if session['session_name'] == table[0]:
+            session['duplicate'] = True
+            break
 
-    page = f'''
-    <table>
-        <tr><td><font size=6>Percent Chosen:</font></td><td><font size =6, color="black">{request.form['percent_predict']}%</font></td></tr> 
 
-        <tr><td><font size=6>Filename Chosen:</font></td><td><font size =6, color="black">{request.form['filename']}</font></td></tr> 
-    <table>
-    <form action='/input' method='POST' >        
-        <button type='submit'>Start Predicting!</button>
-    </form>
-    '''
-    return page 
+
+
+    if session['duplicate']:
+        page = f'''
+        <body>
+            <p><b> DUPLICATE FILENAME!</b></p>
+        <body>
+        <form action='/input' method='POST' >        
+            <button type='submit'>Proceed Using the Same Database</button>
+        </form>
+        <form action='/input' method='POST' >        
+            <input type="text" name="new_session_name" > Input New Session Name</input><br/>
+            <input type="submit" />
+        </form>
+        '''    
+        return page
+    else:
+        cur.execute(
+            f'''CREATE TABLE {session['session_name']}(
+                hand_id INT, 
+                suited BOOL,
+                high_card INT,
+                low_card INT,
+                position FLOAT,
+                card_rank FLOAT,
+                limpers INT,
+                raises_reraises INT,
+                num_players_before INT,
+                num_players_after INT,
+                bb_in_stack INT,
+                starting_stack FLOAT,
+                end_stack FLOAT,
+                model VARCHAR,
+                prediction VARCHAR)
+            ''')
+        conn.commit()
+
+        return redirect('/input') 
+
+
 
 
 
 # Input Page
-@app.route('/input', methods=['POST'])
+@app.route('/input', methods=['POST', 'GET'])
 
 def input():
+
     return render_template('input.html')
 
-
-# hand results
-@app.route('/results', methods=['POST'])
-def results():
-    page = f'''
-
-    <form action='/save_hand' method='POST' >     
-        <input type="text" name="chips_left"> Final Amount of Chips</input><br/>
-
-        <button type='submit'>Save Hand</button>
-    </form>
-    '''
-    return page 
-
-@app.route('/save_hand', methods=['POST'])
-def save_hand():
-    chips_left = float(request.form['chips_left'])
-    df = pd.read_csv(f'hand_results/{session["filename"]}.csv')
-    df = df.drop(df.columns[0], axis=1)
-    temp_df = pd.DataFrame({'suited': [session['suited']], 
-                        'low_card': [session['low_card']],
-                        'position': [session['position']], 
-                        'high_card': [session['high_card']], 
-                        'card_rank': [session['card_rank']],
-                        'limpers': [session['limpers']], 
-                        'raises&reraises': [session['raises&reraises']], 
-                        'num_players_before': [session['num_players_before']], 
-                        'num_players_after': [session['num_players_after']],
-                        'BB_in_stack': [session['BB_in_stack']],
-                        'stack': [session['stack']],
-                        'end_stack': [chips_left],
-                        'model': [session['model']],
-                        'prediction': [session['prediction']]})
-    df = pd.concat([df, temp_df], ignore_index=True)
-    df.to_csv(f'hand_results/{session["filename"]}.csv')
-    page = f'''
-    <form action='/input' method='POST' >        
-        <button type='submit'>Make New Prediction!</button>
-    </form>
-    <form action='/' method='GET' >        
-        <button type='submit'>Change Percent A/B or Filename</button>
-    </form>
-    '''
-    return page 
-
-
-
-
-@app.route('/save_hand_null', methods=['POST'])
-def save_hand_null():
-    df = pd.read_csv(f'hand_results/{session["filename"]}.csv')
-    df = df.drop(df.columns[0], axis=1)
-    temp_df = pd.DataFrame({'suited': [session['suited']], 
-                        'low_card': [session['low_card']],
-                        'position': [session['position']], 
-                        'high_card': [session['high_card']], 
-                        'card_rank': [session['card_rank']],
-                        'limpers': [session['limpers']], 
-                        'raises&reraises': [session['raises&reraises']], 
-                        'num_players_before': [session['num_players_before']], 
-                        'num_players_after': [session['num_players_after']],
-                        'BB_in_stack': [session['BB_in_stack']],
-                        'stack': [session['stack']],
-                        'end_stack': [session['stack']],
-                        'model': [session['model']],
-                        'prediction': [session['prediction']]})
-    df = pd.concat([df, temp_df], ignore_index=True)
-    df.to_csv(f'hand_results/{session["filename"]}.csv')
-    page = f'''
-    <form action='/input' method='POST' >        
-        <button type='submit'>Make New Prediction!</button>
-    </form>
-    <form action='/' method='GET' >        
-        <button type='submit'>Change Percent A/B or Filename</button>
-    </form>
-    ''' 
-    return page 
 
 
 
@@ -192,11 +129,11 @@ def predict():
 
         prediction = model.predict_proba(X)[0][1] # get prediction, below we are assigning result based on prediction proba
         if prediction >= 0.62:
-            result = 'Play It!'
+            prediction_str = 'Play It!'
         if prediction < 0.62 and prediction > 0.53:
-            result = 'Caution'
+            prediction_str = 'Caution'
         if prediction <= .53:
-            result = "Don't Do It!"
+            prediction_str = "Don't Do It!"
 
     fork = np.random.choice(['model', 'non_model'], p=[session['percent_model'], 1 - session['percent_model']])
     session['suited'] = suited
@@ -212,15 +149,9 @@ def predict():
     session['stack'] = float(request.form['stack'])
     session['end_stack'] = None
     session['model'] = fork
-    session['prediction'] = result
+    session['prediction'] = prediction_str
 
-
-
-    if fork == 'model':
-        if prediction >= 0.62:
-            page = f'''
-            <table>
-                <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="green">{result}</font></td></tr> 
+    table = f'''
                 <tr><td></td></tr>
 
                 <tr><td><font size=5>Input Data:</font></td><td></td></tr>
@@ -237,34 +168,29 @@ def predict():
                 <tr><td><font size=4>Position:</font></td><td><b><font size=4>{request.form['position_num']}/{request.form['num_players']}</font><b></td></tr>
                 <tr><td><font size=4>BB in Stack:</font></td><td><b><font size=4>{round(X['BB_in_stack'].iloc[0], 2)}</font><b></td></tr>
 
-            <table>
-            <form action='/results' method='POST' >        
-                <button type='submit'>Input Hand Results</button>
-            </form>
+            <table>'''
 
+    if fork == 'model':
+        if prediction >= 0.62:
+            page = f'''
+            <table>
+                <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="green">{prediction_str}</font></td></tr> 
+                {table}
+
+            <form action="/save_percent_filename" method='POST' >
+                        <input type="text" name="chips_left"> Enter the size of your stack after playing</input><br/>
+                        <input type="submit" />
+            </form>
             '''
         if prediction < 0.62 and prediction > .53:
             page = f'''
             <table>
-                <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="orange">{result}</font></td></tr> 
-                <tr><td></td></tr>
+                <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="orange">{prediction_str}</font></td></tr> 
+                {table}
 
-                <tr><td><font size=5>Input Data:</font></td><td></td></tr>
-                <tr><td></td></tr>
-
-                <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{first_card.capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{second_card.capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited'].capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Card Rank:</font></td><td><b><font size=4>{X['card_rank'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Limpers:</font></td><td><b><font size=4>{X['limpers'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Raises & Reraises:</font></td><td><b><font size=4>{X['raises&reraises'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Number of Players Having Entered Pot:</font></td><td><b><font size=4>{X['num_players_before'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Number of Players Yet to Act:</font></td><td><b><font size=4>{X['num_players_after'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Position:</font></td><td><b><font size=4>{request.form['position_num']}/{request.form['num_players']}</font><b></td></tr>
-                <tr><td><font size=4>BB in Stack:</font></td><td><b><font size=4>{round(X['BB_in_stack'].iloc[0], 2)}</font><b></td></tr>
-            <table>
-            <form action='/results' method='POST' >        
-                <button type='submit'>Played Hand</button>
+            <form action="/save_percent_filename" method='POST' >
+                        <input type="text" name="chips_left"> Enter the size of your stack after playing</input><br/>
+                        <input type="submit" />
             </form>
             <form action='/save_hand_null' method='POST' >        
                 <button type='submit'>Did Not Play Hand</button>
@@ -273,23 +199,9 @@ def predict():
         if prediction <= 0.53:
             page = f'''
             <table>
-                <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="red">{result}</font></td></tr> 
-                <tr><td></td></tr>
+                <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="red">{prediction_str}</font></td></tr> 
+                {table}
 
-                <tr><td><font size=5>Input Data:</font></td><td></td></tr>
-                <tr><td></td></tr>
-
-                <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{first_card.capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{second_card.capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited'].capitalize()}</font><b></td></tr>
-                <tr><td><font size=4>Card Rank:</font></td><td><b><font size=4>{X['card_rank'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Limpers:</font></td><td><b><font size=4>{X['limpers'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Raises & Reraises:</font></td><td><b><font size=4>{X['raises&reraises'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Number of Players Having Entered Pot:</font></td><td><b><font size=4>{X['num_players_before'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Number of Players Yet to Act:</font></td><td><b><font size=4>{X['num_players_after'].iloc[0]}</font><b></td></tr>
-                <tr><td><font size=4>Position:</font></td><td><b><font size=4>{request.form['position_num']}/{request.form['num_players']}</font><b></td></tr>
-                <tr><td><font size=4>BB in Stack:</font></td><td><b><font size=4>{round(X['BB_in_stack'].iloc[0], 2)}</font><b></td></tr>
-            <table>
             <form action='/save_hand_null' method='POST' >        
                 <button type='submit'>Continue</button>
             </form>
@@ -298,37 +210,96 @@ def predict():
         page = f'''
         <table>
             <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="blue">Up to You</font></td></tr> 
-            <tr><td></td></tr>
+            {table}
 
-            <tr><td><font size=5>Input Data:</font></td><td></td></tr>
-            <tr><td></td></tr>
-
-            <tr><td><font size=4>High Card:</font></td><td><b><font size=4>{first_card.capitalize()}</font><b></td></tr>
-            <tr><td><font size=4>Low Card:</font></td><td><b><font size=4>{second_card.capitalize()}</font><b></td></tr>
-            <tr><td><font size=4>Suited:</font></td><td><b><font size=4>{request.form['suited'].capitalize()}</font><b></td></tr>
-            <tr><td><font size=4>Card Rank:</font></td><td><b><font size=4>{X['card_rank'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Limpers:</font></td><td><b><font size=4>{X['limpers'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Raises & Reraises:</font></td><td><b><font size=4>{X['raises&reraises'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Number of Players Having Entered Pot:</font></td><td><b><font size=4>{X['num_players_before'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Number of Players Yet to Act:</font></td><td><b><font size=4>{X['num_players_after'].iloc[0]}</font><b></td></tr>
-            <tr><td><font size=4>Position:</font></td><td><b><font size=4>{request.form['position_num']}/{request.form['num_players']}</font><b></td></tr>
-            <tr><td><font size=4>BB in Stack:</font></td><td><b><font size=4>{round(X['BB_in_stack'].iloc[0], 2)}</font><b></td></tr>
-        <table>
-        <form action='/results' method='POST' >        
-            <button type='submit'>Played Hand</button>
+        <form action="/save_percent_filename" method='POST' >
+                <input type="text" name="chips_left"> Enter the size of your stack after playing</input><br/>
+                <input type="submit" />
         </form>
         <form action='/save_hand_null' method='POST' >        
             <button type='submit'>Did Not Play Hand</button>
         </form>
         '''
+    return page 
 
 
+# hand results
+@app.route('/results', methods=['POST'])
+def results():
+    page = f'''
 
+    <form action='/save_hand' method='POST' >     
+        <input type="text" name="chips_left"> Final Amount of Chips</input><br/>
+
+        <button type='submit'>Save Hand</button>
+    </form>
+    '''
+    return page 
+
+
+@app.route('/save_hand', methods=['POST'])
+def save_hand():
+    chips_left = float(request.form['chips_left'])
+    df = pd.read_csv(f'hand_results/{session["session_name"]}.csv')
+    df = df.drop(df.columns[0], axis=1)
+    temp_df = pd.DataFrame({'suited': [session['suited']], 
+                        'low_card': [session['low_card']],
+                        'position': [session['position']], 
+                        'high_card': [session['high_card']], 
+                        'card_rank': [session['card_rank']],
+                        'limpers': [session['limpers']], 
+                        'raises&reraises': [session['raises&reraises']], 
+                        'num_players_before': [session['num_players_before']], 
+                        'num_players_after': [session['num_players_after']],
+                        'BB_in_stack': [session['BB_in_stack']],
+                        'stack': [session['stack']],
+                        'end_stack': [chips_left],
+                        'model': [session['model']],
+                        'prediction': [session['prediction']]})
+    df = pd.concat([df, temp_df], ignore_index=True)
+    df.to_csv(f'hand_results/{session["session_name"]}.csv')
+    page = f'''
+    <form action='/input' method='POST' >        
+        <button type='submit'>Make New Prediction!</button>
+    </form>
+    <form action='/' method='GET' >        
+        <button type='submit'>Change Percent A/B or Filename</button>
+    </form>
+    '''
     return page 
 
 
 
 
+@app.route('/save_hand_null', methods=['POST'])
+def save_hand_null():
+    df = pd.read_csv(f'hand_results/{session["session_name"]}.csv')
+    df = df.drop(df.columns[0], axis=1)
+    temp_df = pd.DataFrame({'suited': [session['suited']], 
+                        'low_card': [session['low_card']],
+                        'position': [session['position']], 
+                        'high_card': [session['high_card']], 
+                        'card_rank': [session['card_rank']],
+                        'limpers': [session['limpers']], 
+                        'raises&reraises': [session['raises&reraises']], 
+                        'num_players_before': [session['num_players_before']], 
+                        'num_players_after': [session['num_players_after']],
+                        'BB_in_stack': [session['BB_in_stack']],
+                        'stack': [session['stack']],
+                        'end_stack': [session['stack']],
+                        'model': [session['model']],
+                        'prediction': [session['prediction']]})
+    df = pd.concat([df, temp_df], ignore_index=True)
+    df.to_csv(f'hand_results/{session["session_name"]}.csv')
+    page = f'''
+    <form action='/input' method='POST' >        
+        <button type='submit'>Make New Prediction!</button>
+    </form>
+    <form action='/' method='GET' >        
+        <button type='submit'>Change Percent A/B or Filename</button>
+    </form>
+    ''' 
+    return page 
 
 
 
@@ -338,3 +309,5 @@ if __name__ == '__main__':
 
 
 
+
+    # ---test---hello---test2---june_6_5pm---test3---test64---test4---fruit---test5

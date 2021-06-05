@@ -69,8 +69,8 @@ def save_percent_filename():
                 bb_in_stack INT,
                 starting_stack FLOAT,
                 end_stack FLOAT,
-                model VARCHAR,
-                prediction VARCHAR)
+                prediction_value FLOAT,
+                prediction_displayed VARCHAR);
             ''')
         conn.commit()
 
@@ -135,7 +135,8 @@ def predict():
         if prediction <= .53:
             prediction_str = "Don't Do It!"
 
-    fork = np.random.choice(['model', 'non_model'], p=[session['percent_model'], 1 - session['percent_model']])
+    fork = np.random.choice(['displayed', 'not displayed'], p=[session['percent_model'], 1 - session['percent_model']])
+
     session['suited'] = suited
     session['low_card'] = low_card
     session['high_card'] = high_card
@@ -147,9 +148,9 @@ def predict():
     session['num_players_after'] = int(request.form['num_players_after'])
     session['BB_in_stack'] = BB_in_stack
     session['stack'] = float(request.form['stack'])
-    session['end_stack'] = None
-    session['model'] = fork
-    session['prediction'] = prediction_str
+    # session['end_stack'] = None
+    session['prediction_value'] = prediction
+    session['prediction_displayed'] = fork
 
     table = f'''
                 <tr><td></td></tr>
@@ -177,7 +178,7 @@ def predict():
                 <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="green">{prediction_str}</font></td></tr> 
                 {table}
 
-            <form action="/save_percent_filename" method='POST' >
+            <form action="/save_hand" method='POST' >
                         <input type="text" name="chips_left"> Enter the size of your stack after playing</input><br/>
                         <input type="submit" />
             </form>
@@ -188,11 +189,11 @@ def predict():
                 <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="orange">{prediction_str}</font></td></tr> 
                 {table}
 
-            <form action="/save_percent_filename" method='POST' >
+            <form action="/save_hand" method='POST' >
                         <input type="text" name="chips_left"> Enter the size of your stack after playing</input><br/>
                         <input type="submit" />
             </form>
-            <form action='/save_hand_null' method='POST' >        
+            <form action='/save_hand' method='POST' >        
                 <button type='submit'>Did Not Play Hand</button>
             </form>
             '''
@@ -202,7 +203,7 @@ def predict():
                 <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="red">{prediction_str}</font></td></tr> 
                 {table}
 
-            <form action='/save_hand_null' method='POST' >        
+            <form action='/save_hand' method='POST' >        
                 <button type='submit'>Continue</button>
             </form>
             '''
@@ -212,52 +213,59 @@ def predict():
             <tr><td><font size=6>Predicted Outcome:</font></td><td><font size =6, color="blue">Up to You</font></td></tr> 
             {table}
 
-        <form action="/save_percent_filename" method='POST' >
+        <form action='/save_hand' method='POST' >
                 <input type="text" name="chips_left"> Enter the size of your stack after playing</input><br/>
                 <input type="submit" />
         </form>
-        <form action='/save_hand_null' method='POST' >        
+        <form action='/save_hand' method='POST' >        
             <button type='submit'>Did Not Play Hand</button>
         </form>
         '''
     return page 
 
 
-# hand results
-@app.route('/results', methods=['POST'])
-def results():
-    page = f'''
-
-    <form action='/save_hand' method='POST' >     
-        <input type="text" name="chips_left"> Final Amount of Chips</input><br/>
-
-        <button type='submit'>Save Hand</button>
-    </form>
-    '''
-    return page 
 
 
 @app.route('/save_hand', methods=['POST'])
 def save_hand():
-    chips_left = float(request.form['chips_left'])
-    df = pd.read_csv(f'hand_results/{session["session_name"]}.csv')
-    df = df.drop(df.columns[0], axis=1)
-    temp_df = pd.DataFrame({'suited': [session['suited']], 
-                        'low_card': [session['low_card']],
-                        'position': [session['position']], 
-                        'high_card': [session['high_card']], 
-                        'card_rank': [session['card_rank']],
-                        'limpers': [session['limpers']], 
-                        'raises&reraises': [session['raises&reraises']], 
-                        'num_players_before': [session['num_players_before']], 
-                        'num_players_after': [session['num_players_after']],
-                        'BB_in_stack': [session['BB_in_stack']],
-                        'stack': [session['stack']],
-                        'end_stack': [chips_left],
-                        'model': [session['model']],
-                        'prediction': [session['prediction']]})
-    df = pd.concat([df, temp_df], ignore_index=True)
-    df.to_csv(f'hand_results/{session["session_name"]}.csv')
+    chips_left = request.form.get('chips_left') or 'Did Not Play'
+    if chips_left != 'Did Not Play':
+        chips_left = float(chips_left)
+
+    string = []
+    cur.execute(f'''SELECT COUNT(*)
+                    FROM {session['session_name']}''')
+    for value in cur.fetchall():
+        hand_id = value[0]
+        break 
+    
+    insert_query = f'''INSERT INTO {session['session_name']} (hand_id, suited, high_card, low_card, position, card_rank, limpers, raises_reraises, num_players_before, 
+                                               num_players_after, bb_in_stack, starting_stack, end_stack, prediction_value, prediction_displayed) 
+                                               VALUES (s%, s%, s%, s%, s%, s%, s%, s%, s%, s%, s%, s%, s%)
+                    '''
+    
+
+    data = (hand_id, 
+            session['suited'], 
+            session['high_card'], 
+            session['low_card'], 
+            session['position'], 
+            session['card_rank'],
+            session['limpers'],
+            session['raises&reraises'], 
+            session['BB_in_stack'],
+            session['stack'],
+            chips_left,   
+            session['prediction_value'],
+            session['prediction_displayed'])
+
+    cur.execute(insert_query, data)
+
+    conn.commit()
+
+
+
+
     page = f'''
     <form action='/input' method='POST' >        
         <button type='submit'>Make New Prediction!</button>
@@ -271,38 +279,50 @@ def save_hand():
 
 
 
-@app.route('/save_hand_null', methods=['POST'])
-def save_hand_null():
-    df = pd.read_csv(f'hand_results/{session["session_name"]}.csv')
-    df = df.drop(df.columns[0], axis=1)
-    temp_df = pd.DataFrame({'suited': [session['suited']], 
-                        'low_card': [session['low_card']],
-                        'position': [session['position']], 
-                        'high_card': [session['high_card']], 
-                        'card_rank': [session['card_rank']],
-                        'limpers': [session['limpers']], 
-                        'raises&reraises': [session['raises&reraises']], 
-                        'num_players_before': [session['num_players_before']], 
-                        'num_players_after': [session['num_players_after']],
-                        'BB_in_stack': [session['BB_in_stack']],
-                        'stack': [session['stack']],
-                        'end_stack': [session['stack']],
-                        'model': [session['model']],
-                        'prediction': [session['prediction']]})
-    df = pd.concat([df, temp_df], ignore_index=True)
-    df.to_csv(f'hand_results/{session["session_name"]}.csv')
-    page = f'''
-    <form action='/input' method='POST' >        
-        <button type='submit'>Make New Prediction!</button>
-    </form>
-    <form action='/' method='GET' >        
-        <button type='submit'>Change Percent A/B or Filename</button>
-    </form>
-    ''' 
-    return page 
+# @app.route('/save_hand_null', methods=['POST'])
+# def save_hand_null():
+#     df = pd.read_csv(f'hand_results/{session["session_name"]}.csv')
+#     df = df.drop(df.columns[0], axis=1)
+#     temp_df = pd.DataFrame({'suited': [session['suited']], 
+#                         'low_card': [session['low_card']],
+#                         'position': [session['position']], 
+#                         'high_card': [session['high_card']], 
+#                         'card_rank': [session['card_rank']],
+#                         'limpers': [session['limpers']], 
+#                         'raises&reraises': [session['raises&reraises']], 
+#                         'num_players_before': [session['num_players_before']], 
+#                         'num_players_after': [session['num_players_after']],
+#                         'BB_in_stack': [session['BB_in_stack']],
+#                         'stack': [session['stack']],
+#                         'end_stack': [session['stack']],
+#                         'model': [session['model']],
+#                         'prediction': [session['prediction']]})
+#     df = pd.concat([df, temp_df], ignore_index=True)
+#     df.to_csv(f'hand_results/{session["session_name"]}.csv')
+#     page = f'''
+#     <form action='/input' method='POST' >        
+#         <button type='submit'>Make New Prediction!</button>
+#     </form>
+#     <form action='/' method='GET' >        
+#         <button type='submit'>Change Percent A/B or Filename</button>
+#     </form>
+#     ''' 
+#     return page 
 
 
+# hand results
+# @app.route('/results', methods=['POST'])
+# def results():
+#     page = f'''
 
+#     <form action='/save_hand' method='POST' >     
+#         <input type="text" name="chips_left"> Final Amount of Chips</input><br/>
+
+#         <button type='submit'>Save Hand</button>
+#     </form>
+#     '''
+#     return page 
+# return request.form.get('session_name') or 'No Session Name! dingus'
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, threaded=True, debug=False)

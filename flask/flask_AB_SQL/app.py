@@ -12,16 +12,63 @@ app.secret_key = 'dev'
 
 
 conn = pg2.connect(database="hand_results", user="postgres", password="galvanize", host="localhost", port="5432")
-
-
 engine = create_engine("postgresql://postgres:galvanize@localhost:5432/hand_results")
-
 cur = conn.cursor()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
 
+    cur.execute(f'''SELECT COUNT(*)
+                    FROM {session['session_name']}''')
+    for value in cur.fetchall():
+        hand_id = value[0]
+        break 
+
+    cur.execute('''CREATE TABLE Session_Logs(
+            session_name VARCHAR, 
+            hands_logged INT);
+            ''')
+    conn.commit()
+
+    cur.execute("""SELECT table_name FROM information_schema.tables
+       WHERE table_schema = 'public'""")
+    tables = []
+    hands = []
+    for table in cur.fetchall():
+        tables.append(table[0])
+
+    for table in tables:
+        cur.execute(f'''SELECT COUNT(*)
+                        FROM {table}''')
+        for hand_count in cur.fetchall():
+            hands.append(hand_count[0])
+
+    insert_query = 'INSERT INTO session_logs (session_name, hands_logged) VALUES(%s, %s);'
+
+    for table, hand_count in zip(tables, hands):
+        data = (table, hand_count)
+        cur.execute(insert_query, data)
+        conn.commit()
+
+
+    cur.execute('SELECT * FROM session_logs')
+    results = cur.fetchall()
+    return render_template('index2.html', events = results)
+
+    # page = f'''
+    # <form action="/save_percent_filename" method='POST' >
+    #             Enter percent of hands to be directed to model and filepath for results:<br/>
+    #             <input type="text" name="percent_predict"> %</input><br/>
+    #             <input type="text" name="session_name"> session name </input><br/>
+
+    #             <input type="submit" />
+    # </form>
+    # <body>
+    #     <p><b> Existing Databases:</b></p>
+    #     <p><b> {tables}</b></p>
+    # <body>
+    # '''
+    # return page 
 
 
 @app.route('/save_percent_filename', methods=['POST', 'GET'])
@@ -57,7 +104,7 @@ def save_percent_filename():
         cur.execute(
             f'''CREATE TABLE {session['session_name']}(
                 hand_id INT, 
-                suited BOOL,
+                suited INT,
                 high_card INT,
                 low_card INT,
                 position FLOAT,
@@ -241,7 +288,7 @@ def save_hand():
     
     insert_query = f'''INSERT INTO {session['session_name']} (hand_id, suited, high_card, low_card, position, card_rank, limpers, raises_reraises, num_players_before, 
                                                num_players_after, bb_in_stack, starting_stack, end_stack, prediction_value, prediction_displayed) 
-                                               VALUES (s%, s%, s%, s%, s%, s%, s%, s%, s%, s%, s%, s%, s%)
+                                               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                     '''
     
 
@@ -253,6 +300,8 @@ def save_hand():
             session['card_rank'],
             session['limpers'],
             session['raises&reraises'], 
+            session['num_players_before'],
+            session['num_players_after'],
             session['BB_in_stack'],
             session['stack'],
             chips_left,   
@@ -330,4 +379,3 @@ if __name__ == '__main__':
 
 
 
-    # ---test---hello---test2---june_6_5pm---test3---test64---test4---fruit---test5

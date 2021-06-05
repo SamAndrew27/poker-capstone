@@ -1,0 +1,26 @@
+<form action="/save_percent_filename" method='POST' >
+    Enter percent of hands to be directed to be shown the model's prediction and the name of your session:<br/>
+    <input type="text" name="percent_predict"> %</input><br/>
+    <input type="text" name="session_name"> session name </input><br/>
+    <input type="submit" />
+</form>
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">session_name</th>
+        <th scope="col">hands_logged</th>
+      </tr>
+    </thead>
+      {% for event in events %}
+      <tr>
+      <th scope="row">{{event.session_name}}</th>
+      <td>{{event[0]}}
+      </td>
+      <td>{{event[1]}}
+      </td>
+      <td><button>Approve</button><button>Remove</button>
+      </td>
+      </tr>
+      {% endfor %}
+  </table>

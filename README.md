@@ -1,7 +1,6 @@
 # Predicting Poker Hand Outcomes
 
 ![Hud Image](/images/cap2_images/table.PNG)
-
 ## Goal
 
 The goal of this project is to build a model that predicts whether I should or should not play any given poker hand based on a database of all the online hands I have played since October 2019. Because poker is partly a game of luck, the goal here is not perfection, but rather a model that helps guide my decision making. 

@@ -181,7 +181,7 @@ Having created my model, I wanted to package it in a format where I could feed i
 
 ![input screen](images/misc/flask_data_screen.png)
 
-To test the efficacy of my model, I created a separate flask app that allows for A/B testing. The app first takes the user to a page that allows them to input the percentage of hands they would like directed to the prediction page, as well as the location to store their results. The user then inputs the information used in the modeling process, and is subsequently directed to either the predicted outcome or a page that tells them to make their decisions without any guidance from the model. After this step, the user inputs the result of the hand, and the results are saved to a CSV file which is updated over the course of the session. 
+To test the efficacy of my model, I created a separate flask app that allows for A/B testing. The app first takes the user to a page that allows them to input the percentage of hands they would like directed to the prediction page, as well as the location to store their results. The user then inputs the information used in the modeling process, and is subsequently directed to either the predicted outcome or a page that tells them to make their decisions without any guidance from the model. After this step, the user inputs the result of the hand, and the results are saved to a Postgres database which is updated throughout the session. 
 
 ![output screen](images/misc/flask_up_to_you.png)
 
